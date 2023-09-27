@@ -16,8 +16,9 @@ pipeline {
     stage('Add env variables') {
       steps {
         withCredentials(bindings: [file(credentialsId: 'payment_env', variable: 'FILE')]) {
-          sh 'cp $FILE .env'
-          sh 'cat .env'
+          sh '''touch .env; ls -la'''
+          sh 'cat .env >> .env'
+          sh 'ls -la'
         }
 
       }
@@ -52,9 +53,6 @@ pipeline {
     stage('Start App') {
       steps {
         withCredentials(bindings: [file(credentialsId: 'payment_env', variable: 'FILE')]) {
-          sh 'cp $FILE .env'
-          sh 'cat .env'
-          sh 'ls'
           sh 'docker rm --force --volumes kmx-payment-gateway'
           sh '''docker compose up --wait'''
         }
