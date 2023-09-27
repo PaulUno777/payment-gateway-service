@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "yarn get-proto | npx prisma generate && npx prisma db push && nest build && yarn copy-proto",
+    "build": "yarn get-proto && npx prisma generate && npx prisma db push && nest build && yarn copy-proto",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "yarn copy-proto | nest start --watch",
@@ -19,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "copy-proto": "copyfiles -u 1 proto/**/* dist/",
-    "get-proto": "node clone-proto.js && echo success"
+    "get-proto": "node clone-proto.js"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.2",
