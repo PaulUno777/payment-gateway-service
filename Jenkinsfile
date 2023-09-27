@@ -1,4 +1,3 @@
-
 pipeline {
   agent any
   stages {
@@ -16,29 +15,31 @@ pipeline {
 
     stage('Add env variables') {
       steps {
-        withCredentials([file(credentialsId: 'payment_env', variable: 'FILE')]) {
-          sh '''cp $FILE .env'''
+        withCredentials(bindings: [file(credentialsId: 'payment_env', variable: 'FILE')]) {
+          sh 'cp $FILE .env'
           sh 'cat .env'
         }
+
       }
     }
 
     stage('Build app') {
       parallel {
-        
         stage('Build app') {
           steps {
             sh 'docker build -t unoteck/kmx-payment-gateway .'
           }
         }
-        
-        stage('Log into Dockerhub') { 
+
+        stage('Log into Dockerhub') {
           steps {
-            withCredentials([usernamePassword(credentialsId: 'paulin_docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-               sh 'docker login -u $DOCKER_USER -p $DOCKER_PASSWORD'
+            withCredentials(bindings: [usernamePassword(credentialsId: 'paulin_docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+              sh 'docker login -u $DOCKER_USER -p $DOCKER_PASSWORD'
             }
+
           }
         }
+
       }
     }
 
