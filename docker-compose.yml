@@ -1,0 +1,11 @@
+version: "3"
+services:
+  server:
+    container_name: kmx-payment-gateway
+    image: unoteck/kmx-payment-gateway
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - 3050:3000
+      - 5880:3000
