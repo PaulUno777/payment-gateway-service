@@ -51,9 +51,14 @@ pipeline {
 
     stage('Start App') {
       steps {
-        sh 'docker rm --force --volumes kmx-payment-gateway'
-        sh '''docker compose up --wait
-'''
+        withCredentials(bindings: [file(credentialsId: 'payment_env', variable: 'FILE')]) {
+          sh 'cp $FILE .env'
+          sh 'cat .env'
+          sh 'ls'
+          sh 'docker rm --force --volumes kmx-payment-gateway'
+          sh '''docker compose up --wait'''
+        }
+
       }
     }
 
