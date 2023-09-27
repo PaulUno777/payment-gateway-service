@@ -3,7 +3,7 @@ import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices';
 import { IsString } from 'class-validator';
 import { Observable } from 'rxjs';
 
-export const protobufPackage = 'intouch_package';
+export const protobufPackage = 'paymentPackage';
 
 export interface voidNoParam {}
 
@@ -43,7 +43,7 @@ export interface cashInRes {
   message: string;
 }
 
-export const INTOUCH_PACKAGE_PACKAGE_NAME = 'intouch_package';
+export const INTOUCH_PACKAGE_PACKAGE_NAME = 'paymentPackage';
 
 export interface PaymentClient {
   getAccountBalance(request: voidNoParam): Observable<amount>;
