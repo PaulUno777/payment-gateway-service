@@ -39,7 +39,6 @@ lerna-debug.log*
 *.env
 
 #proto file
-/proto
 
 
 tmp.txt
