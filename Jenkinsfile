@@ -16,11 +16,10 @@ pipeline {
     stage('Add env variables') {
       steps {
         withCredentials(bindings: [file(credentialsId: 'payment_env', variable: 'FILE')]) {
-          sh '''touch .env; ls -la'''
-          sh 'cat .env >> .env'
+          sh 'cp $FILE .env'
+          sh 'cat .env'
           sh 'ls -la'
         }
-
       }
     }
 
@@ -29,6 +28,7 @@ pipeline {
         stage('Build app') {
           steps {
             sh 'docker build -t unoteck/kmx-payment-gateway .'
+            sh 'ls -la'
           }
         }
 
@@ -53,15 +53,18 @@ pipeline {
     stage('Start App') {
       steps {
         withCredentials(bindings: [file(credentialsId: 'payment_env', variable: 'FILE')]) {
+          sh 'cp $FILE .env'
+          sh 'cat .env'
+          sh 'ls -la'
           sh 'docker rm --force --volumes kmx-payment-gateway'
           sh '''docker compose up --wait'''
         }
-
       }
     }
 
     stage('Get App Logs') {
       steps {
+        sh 'ls -la'
         sh 'docker container logs kmx-payment-gateway'
       }
     }
