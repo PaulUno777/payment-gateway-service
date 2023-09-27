@@ -9,7 +9,7 @@
     "build": "nest build && npx prisma generate && npx prisma db push && yarn copy-proto",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "npm run copy-proto && nest start --watch ",
+    "start:dev": "yarn copy-proto | nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
