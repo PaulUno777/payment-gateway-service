@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "yarn get-proto && npx prisma generate && npx prisma db push && nest build && yarn copy-proto",
+    "build": "npx prisma generate && npx prisma db push && nest build && yarn copy-proto",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "yarn copy-proto | nest start --watch",
