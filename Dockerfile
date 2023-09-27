@@ -45,6 +45,7 @@ COPY --chown=node:node . .
 # Run the build command which creates the production bundle
 RUN yarn build
 RUN ls dist
+RUN cat dist/intouch.proto
 
 # Set NODE_ENV environment variable
 ENV NODE_ENV production
