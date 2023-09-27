@@ -14,7 +14,7 @@ import { INTOUCH_PACKAGE_PACKAGE_NAME } from '@app/common/constants';
         options: {
           url: 'localhost:50000',
           package: INTOUCH_PACKAGE_PACKAGE_NAME,
-          protoPath: join(__dirname, './proto/intouch.proto'),
+          protoPath: './intouch.proto',
         },
       },
     ]),
