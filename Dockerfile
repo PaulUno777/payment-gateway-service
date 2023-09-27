@@ -31,9 +31,10 @@ COPY --chown=node:node yarn.lock ./
 COPY --chown=node:node clone-proto.js ./
 
 #In order to run `npm run build` we need access to the Nest CLI which is a dev dependency. In the previous development stage we ran `npm ci` which installed all dependencies, so we can copy over the node_modules directory from the development image
-RUN node clone-proto.js
 
 COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
+
+RUN node clone-proto.js
 
 COPY --chown=node:node . .
 
