@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Checkout commit') {
       steps {
-        git(url: 'https://github.com/PaulUno777/payment-gateway-service.git', branch: 'main')
+        git(url: 'https://github.com/PaulUno777/payment-gateway-service.git', branch: 'main', credentialsId: 'paulin_github')
       }
     }
 
