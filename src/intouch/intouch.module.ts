@@ -12,7 +12,7 @@ import { INTOUCH_PACKAGE_PACKAGE_NAME } from '@app/common/constants';
         name: 'INTOUCH_PACKAGE',
         transport: Transport.GRPC,
         options: {
-          url: 'localhost:50000',
+          url: process.env.INTOUCH_GRPC_URL,
           package: INTOUCH_PACKAGE_PACKAGE_NAME,
           protoPath: join(__dirname, './intouch.proto'),
         },

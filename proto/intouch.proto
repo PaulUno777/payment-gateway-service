@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package paymentPackage;
+
+service Payment {
+  rpc getAccountBalance(voidNoParam) returns (amount);
+  rpc checkTransactionStatus(transactionId) returns (transactionStatus);
+  rpc cashIn(cashInReq) returns (cashInRes);
+}
+
+message voidNoParam {}
+message bookId {
+  int32 id = 1;
+}
+message amount {
+  int32 amount = 1;
+}
+message transactionId {
+  string transactionId = 1;
+}
+message transactionStatus {
+  string service_id = 1;
+  string gu_transaction_id = 2;
+  string status = 3;
+  string transaction_date = 4;
+  string recipient_id = 5;
+  string amount = 6;
+  string recipient_invoice_id = 7;
+}
+message cashInReq {
+  string phoneNumber = 1;
+  int32 amount = 2;
+}
+
+message cashInRes {
+  string service_id = 1;
+  string gu_transaction_id = 2;
+  string status = 3;
+  string recipient_phone_number = 4;
+  string amount = 5;
+  string message = 6;
+}

@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package momo_service;
+
+service MomoProviderService {
+    rpc CreateMomoProvider(CreateMomoProviderRequest) returns (MomoProvider){}
+    rpc FindAllMomoProviders(Empty) returns ( MomoProviders){}
+    rpc FindOneMomoProvider(FindOneMomoProviderRequest) returns (MomoProvider){}
+    rpc UpdateMomoProvider(UpdateMomoProviderRequest) returns (MomoProvider){}
+    rpc DeleteMomoProvider(FindOneMomoProviderRequest) returns (MomoProvider){}
+    rpc QueryMomoProviders(stream PaginatedMomoRequest) returns (stream PaginatedMomoResponse){}
+}
+
+//MomoProvider nature
+message Empty{}
+
+message MomoProviders {
+    repeated MomoProvider data = 1;
+}
+
+message UpdateMomoProviderRequest {
+    string id = 1;
+    CreateMomoProviderRequest poviderUpdate = 2;
+}
+
+message FindOneMomoProviderRequest {
+    string id = 1;
+}
+
+message PaginatedMomoRequest {
+    int32 page = 1;
+    int32 size = 2;
+    repeated string sort = 3;
+}
+
+message PaginatedMomoResponse{
+    repeated MomoProvider data = 1;
+    MetaData metaData = 2;
+}
+
+message MetaData {
+    bool sorted = 1;
+    int32 totalPages = 2;
+    int32 pageNumber = 3;
+    int32 pageSize = 4;
+    int32 next = 5;
+    int32 prev = 6;
+}
+
+message CreateMomoProviderRequest{
+    string name = 1;
+    string apiKey = 2;
+    string secretKey = 3;
+    string logo = 4;
+    string color = 5;
+    bool isWithdrawalAvailable = 6;
+    bool isDepositAvailable = 7;
+    int32 credibility = 8;
+}
+
+message MomoProvider{
+    string id = 1;
+    string name = 2;
+    string apiKey = 3;
+    string secretKey = 4;
+    string logo = 5;
+    string color = 6;
+    bool isWithdrawalAvailable = 7;
+    bool isDepositAvailable = 8;
+    int32 credibility = 9;
+}
