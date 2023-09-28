@@ -4,7 +4,6 @@ services:
     container_name: kmx-payment-gateway
     image: unoteck/kmx-payment-gateway
     restart: always
-    network_mode: "host"
     env_file:
       - .env
     ports:
