@@ -9,7 +9,7 @@ pipeline {
 
     stage('Log projet contain') {
       steps {
-        sh 'touch .env; ls -la'
+        sh 'touch .env;'
       }
     }
 
@@ -18,7 +18,6 @@ pipeline {
         withCredentials(bindings: [file(credentialsId: 'payment_env', variable: 'FILE')]) {
           sh 'cp $FILE .env'
           sh 'cat .env'
-          sh 'ls -la'
         }
       }
     }

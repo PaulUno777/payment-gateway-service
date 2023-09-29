@@ -8,15 +8,16 @@ import {
   transactionId,
   transactionStatus,
   voidNoParam,
-} from '@app/common/constants';
+} from './intouch';
 import { Observable } from 'rxjs';
 import { ClientGrpc } from '@nestjs/microservices';
+import { INTOUCH_PACKAGE_NAME } from '@app/common/constants';
 
 @Injectable()
 export class IntouchService implements PaymentClient, OnModuleInit {
   private paymentService: PaymentClient;
 
-  constructor(@Inject('INTOUCH_PACKAGE') private client: ClientGrpc) {}
+  constructor(@Inject(INTOUCH_PACKAGE_NAME) private client: ClientGrpc) {}
 
   onModuleInit() {
     this.paymentService =

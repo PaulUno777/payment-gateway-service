@@ -18,8 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "copy-proto": "copyfiles -u 1 proto/**/* dist/",
-    "get-proto": "node clone-proto.js"
+    "copy-proto": "copyfiles -u 1 proto/**/* dist/"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.2",

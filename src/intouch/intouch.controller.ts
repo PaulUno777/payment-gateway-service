@@ -5,7 +5,7 @@ import {
   amount,
   cashInRes,
   transactionStatus,
-} from '@app/common/constants';
+} from './intouch';
 import { Observable } from 'rxjs';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { HasRole } from '@app/common';

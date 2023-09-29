@@ -1,2 +1,1 @@
-export * from './intouch-data';
-export * from './intouch';
+export * from './package-names';

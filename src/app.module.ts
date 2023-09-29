@@ -5,6 +5,7 @@ import { AuthTokenGard, LoggerMiddleware, PrismaModule } from '@app/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ApiClientModule } from './api-client/api-client.module';
 import { IntouchModule } from './intouch/intouch.module';
+import { MomoModule } from './momo/momo.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { IntouchModule } from './intouch/intouch.module';
     AuthModule,
     ApiClientModule,
     IntouchModule,
+    MomoModule,
   ],
   providers: [
     {

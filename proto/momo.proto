@@ -1,71 +1,72 @@
 syntax = "proto3";
 
-package momo_service;
+package momo_package;
 
-service MomoProviderService {
-    rpc CreateMomoProvider(CreateMomoProviderRequest) returns (MomoProvider){}
-    rpc FindAllMomoProviders(Empty) returns ( MomoProviders){}
-    rpc FindOneMomoProvider(FindOneMomoProviderRequest) returns (MomoProvider){}
-    rpc UpdateMomoProvider(UpdateMomoProviderRequest) returns (MomoProvider){}
-    rpc DeleteMomoProvider(FindOneMomoProviderRequest) returns (MomoProvider){}
-    rpc QueryMomoProviders(stream PaginatedMomoRequest) returns (stream PaginatedMomoResponse){}
+service PaymentService {
+    rpc CashIn(FinanceRequest) returns (FinanceResponse){}
+    rpc CashOut(FinanceRequest) returns (FinanceResponse){}
+    rpc CheckTransactionStatus(StatusRequest) returns ( StatusResponse){}
+    rpc CheckUserInfos(UserInfosRequest) returns (UserInfosResponse){}
 }
 
-//MomoProvider nature
-message Empty{}
-
-message MomoProviders {
-    repeated MomoProvider data = 1;
+message UserInfosRequest {
+    string phoneNumber = 1;
+    string providerCode = 2;
 }
 
-message UpdateMomoProviderRequest {
+message UserInfosResponse {
+    string firstname = 1;
+    string lastname = 2;
+    string gender = 3;
+    string birthdate = 4;
+    string locale = 5;
+}
+
+message StatusRequest {
     string id = 1;
-    CreateMomoProviderRequest poviderUpdate = 2;
+    string payToken = 2;
+    string Mouvement = 3;
+    string providerCode = 4;
 }
 
-message FindOneMomoProviderRequest {
+message StatusResponse{
+    bool success = 1;
+    string message = 2;
+    ProviderResponse providerResponse = 3;
+}
+
+message FinanceRequest{
     string id = 1;
+    double amount = 2;
+    string payerPhone = 3;
+    string description = 4;
+    string callbackUrl = 5;
+    string externalId = 6;
+    string payToken = 7;
+    string providerCode = 8;
+    string apiClient = 9;
 }
 
-message PaginatedMomoRequest {
-    int32 page = 1;
-    int32 size = 2;
-    repeated string sort = 3;
+message FinanceResponse {
+    bool success = 1;
+    string message = 2;
+    ProviderResponse providerResponse = 3;
 }
 
-message PaginatedMomoResponse{
-    repeated MomoProvider data = 1;
-    MetaData metaData = 2;
+message ProviderResponse {
+    int32 code = 1;
+    string status = 2;
+    string financialTransactionId = 3;
+    string amount = 4;
+    string externalId = 5;
+    string message = 6;
+    Payer customer = 7;
+    Payer owner = 8;
+    string payToken = 9;
 }
 
-message MetaData {
-    bool sorted = 1;
-    int32 totalPages = 2;
-    int32 pageNumber = 3;
-    int32 pageSize = 4;
-    int32 next = 5;
-    int32 prev = 6;
+message Payer{
+    string partyIdType = 1;
+    string partyId = 2;
 }
 
-message CreateMomoProviderRequest{
-    string name = 1;
-    string apiKey = 2;
-    string secretKey = 3;
-    string logo = 4;
-    string color = 5;
-    bool isWithdrawalAvailable = 6;
-    bool isDepositAvailable = 7;
-    int32 credibility = 8;
-}
-
-message MomoProvider{
-    string id = 1;
-    string name = 2;
-    string apiKey = 3;
-    string secretKey = 4;
-    string logo = 5;
-    string color = 6;
-    bool isWithdrawalAvailable = 7;
-    bool isDepositAvailable = 8;
-    int32 credibility = 9;
-}
