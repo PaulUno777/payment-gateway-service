@@ -20,15 +20,7 @@ export class FinanceRequest {
 
   @ApiProperty()
   @IsString()
-  callbackUrl: string;
-
-  @ApiProperty()
-  @IsString()
   externalId: string;
-
-  @ApiProperty()
-  @IsString()
-  payToken: string;
 
   @ApiProperty()
   @IsIn(['MTN_MOBILE_MONEY', 'ORANGE_MONEY', 'INTOUCH'])
