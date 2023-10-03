@@ -2,7 +2,7 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class ConnectionErrorException extends HttpException {
-  constructor(message = 'Connection error') {
+  constructor(message = 'Database Connection Error') {
     super(message, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }

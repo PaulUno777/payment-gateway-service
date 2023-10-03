@@ -5,16 +5,12 @@ import {
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import {
-  ConnectionErrorException,
-  PrismaService,
-  hashData,
-  verifyHash,
-} from '@app/common';
+import { ConnectionErrorException, hashData, verifyHash } from '@app/common';
 import { RoleType, User } from '@prisma/client';
 import { AuthUserRes } from './dto/auth-user.res';
 import { AuthUserReq } from './dto/auth-user.req';
 import { GetTokenRes } from 'src/api-client/dto/get-token.dto copy';
+import { PrismaService } from '@app/common/prisma';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +26,7 @@ export class AuthService {
       const user = await this.create(body);
       //get tokens (login)
       const tokens = await this.getTokens(user.id, user.email, user.role);
-      await this.updateRefreshToken(user.id, tokens.refresh_token);
+      await this.updateRefreshToken(user.id, tokens.refreshToken);
       return tokens;
     } catch (error) {
       if (error.status === 409) {
@@ -58,7 +54,7 @@ export class AuthService {
 
     //get tokens (login)
     const tokens = await this.getTokens(user.id, user.email, user.role);
-    this.updateRefreshToken(user.id, String(tokens.refresh_token));
+    this.updateRefreshToken(user.id, String(tokens.refreshToken));
     return tokens;
   }
 
@@ -86,7 +82,7 @@ export class AuthService {
 
     //get tokens (login)
     const tokens = await this.getTokens(user.id, user.email, user.role);
-    await this.updateRefreshToken(user.id, String(tokens.refresh_token));
+    await this.updateRefreshToken(user.id, String(tokens.refreshToken));
     return tokens;
   }
 
@@ -140,8 +136,8 @@ export class AuthService {
     ]);
 
     return {
-      auth_token: at,
-      refresh_token: rt,
+      authToken: at,
+      refreshToken: rt,
     };
   }
 
@@ -150,7 +146,7 @@ export class AuthService {
       {
         sub: apiId,
         apiKey,
-        role: RoleType.client_manager,
+        role: RoleType.api_client,
       },
       {
         expiresIn: 3600,
@@ -158,9 +154,9 @@ export class AuthService {
     );
 
     return {
-      access_token: at,
-      token_type: 'Bearer',
-      expires_in: 3600,
+      accessToken: at,
+      tokenType: 'Bearer',
+      expiresIn: 3600,
     };
   }
 

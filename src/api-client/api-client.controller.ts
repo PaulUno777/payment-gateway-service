@@ -13,37 +13,36 @@ export class ApiClientController {
 
   @Post()
   @ApiBearerAuth('jwt-auth')
-  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
+  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
   create(@Body() createApiClientDto: CreateApiClientReq) {
     return this.apiClientService.create(createApiClientDto);
   }
 
   @Get()
   @ApiBearerAuth('jwt-auth')
-  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
+  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
   findAll() {
     return this.apiClientService.findAll();
   }
 
   @Get(':id')
   @ApiBearerAuth('jwt-auth')
-  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
+  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
   findOne(@Param('id') id: string) {
     return this.apiClientService.findOne(id);
   }
 
   @Patch(':id')
   @ApiBearerAuth('jwt-auth')
-  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
+  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
   update(@Param('id') id: string, @Body() updateRequest: UpdateApiClientReq) {
     return this.apiClientService.update(id, updateRequest);
   }
 
-  @Patch(':id/toggle_activation')
+  @Patch(':id/toggle-activation')
   @ApiBearerAuth('jwt-auth')
-  @HasRole(RoleType.super_admin, RoleType.manage_users)
-  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
-  remove(@Param('id') id: string) {
-    return this.apiClientService.toggleActivateState(id);
+  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
+  toggleActivation(@Param('id') id: string) {
+    return this.apiClientService.toggleActivation(id);
   }
 }

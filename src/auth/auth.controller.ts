@@ -19,9 +19,8 @@ import {
 import { AuthUserRes } from './dto/auth-user.res';
 import { AuthUserReq } from './dto/auth-user.req';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiClientService } from 'src/api-client/api-client.service';
 
-@ApiTags('Auth')
+@ApiTags('Authentification')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -33,7 +32,9 @@ export class AuthController {
     description: 'Returns authentification tokens',
     type: AuthUserRes,
   })
-  @ApiOperation({ summary: 'Sign in with email and password' })
+  @ApiOperation({
+    summary: 'Register in with email and password (for test purpose only)',
+  })
   signup(@Body() userDto: AuthUserReq): Promise<AuthUserRes> {
     return this.authService.signup(userDto);
   }
@@ -72,8 +73,7 @@ export class AuthController {
   @UseGuards(AuthGuard('basic'))
   @ApiOperation({ summary: 'Get access token from api client' })
   @Get('token')
-  test(@CurrentUser() client: any) {
-    console.log(client);
+  getAccessToken(@CurrentUser() client: any) {
     return this.authService.getAccessToken(client.id, client.apiKey);
   }
 }

@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class AuthUserRes {
   @ApiProperty()
-  auth_token: string;
+  authToken: string;
   @ApiProperty()
-  refresh_token: string;
+  refreshToken: string;
 }

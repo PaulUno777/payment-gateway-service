@@ -4,13 +4,13 @@ import { IsString } from 'class-validator';
 export class GetTokenRes {
   @ApiProperty()
   @IsString()
-  access_token: string;
+  accessToken: string;
 
   @ApiProperty()
   @IsString()
-  token_type: string;
+  tokenType: string;
 
   @ApiProperty()
   @IsString()
-  expires_in?: number;
+  expiresIn?: number;
 }

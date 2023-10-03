@@ -1,6 +1,5 @@
 /* eslint-disable */
 import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices';
-import { IsString } from 'class-validator';
 import { Observable } from 'rxjs';
 
 export const protobufPackage = 'paymentPackage';

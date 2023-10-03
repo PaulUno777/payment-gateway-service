@@ -36,6 +36,7 @@ enum RoleType {
   manage_users
   all
   new_role
+  api_client
 }
 
 model Role {
@@ -50,31 +51,17 @@ model Role {
 
 model ApiClient {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  name        String  @unique
-  apiKey      String  @unique @map("api_key")
-  secretKey   String  @unique @map("secret_key")
-  isActive    Boolean @default(true) @map("active")
-  description String?
-  webhookUrl  String? @default("webhook_url") @map("webhook_url")
-
-  @@map("api-clients")
-}
-
-model Log {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  type    String
-  content String
+  name        String  @unique
+  apiKey      String? @unique @default(uuid())
+  secretKey   String? @unique @default(uuid())
+  isActive    Boolean @default(true)
+  description String?
+  webhookUrl  String?
 
-  transaction   Transaction? @relation(fields: [transactionId], references: [id])
-  transactionId String?      @db.ObjectId
-
-  @@map("logs")
+  @@map("api-clients")
 }
 
 model PaymentProvider {
@@ -82,18 +69,23 @@ model PaymentProvider {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  code                  ProviderCode @unique
-  type                  ProviderType @default(MOBILE_MONEY)
-  applyCountry          String?
-  logo                  String?
-  isDepositAvailable    Boolean      @default(false)
-  isWithdrawalAvailable Boolean      @default(false)
-  label                 String?
-  isActive              Boolean      @default(true)
-
-  Wallet Wallet[]
+  label        String?
+  code         ProviderCode   @unique
+  type         ProviderType
+  applyCountry String?
+  logo         String?
+  isActive     Boolean        @default(true)
+  params       ProviderParams
 
   @@map("payment_providers")
+}
+
+type ProviderParams {
+  isDepositAvailable      Boolean @default(false)
+  isWithdrawalAvailable   Boolean @default(false)
+  isCustomerInfoAvailable Boolean @default(false)
+  minimumThreshold        Float
+  maximumThreshold        Float
 }
 
 enum ProviderType {
@@ -105,36 +97,69 @@ enum ProviderType {
 enum ProviderCode {
   ORANGE_MONEY
   MTN_MOBILE_MONEY
+  INTOUCH
+  AUTO_USSD
 }
 
 model Transaction {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime  @default(now())
+  CompletedAt DateTime? @updatedAt
 
-  amount          Float
-  verifyAt        DateTime?
-  startLog        String    @default("")
-  startSignature  String    @default("")
-  endLog          String?
-  endSignature    String?
-  verificationKey String?
-  hash            String?
-  description     String?
-  callbackUrl     String?
-  externalId      String?
-  targetNumber    String?
-  payToken        String?
+  source            Source
+  senderDetails     SenderDetails
+  recipientDetails  RecipientDetails
+  amount            Amount
+  paymentPrividerId String
+  fees              Float
+  description       String?
+  callbackUrl       String?
+  payToken          String?
+  state             State            @default(PENDING)
+  mouvement         Mouvement
 
-  state     State     @default(PENDING)
-  apiClient String?
-  mouvement Mouvement
-  Log       Log[]
-
-  wallet   Wallet? @relation(fields: [walletId], references: [id])
-  walletId String? @unique @db.ObjectId
+  // wallet   Wallet? @relation(fields: [walletId], references: [id])
+  // walletId String? @unique @db.ObjectId
 
   @@map("transactions")
+}
+
+type ExecutionReport {
+  startLog       String?  @default("")
+  startSignature String?  @default("")
+  endLog         String?
+  endSignature   String?
+}
+
+type Source {
+  name     String
+  entityId String
+  type     SourceType
+}
+
+type SenderDetails {
+  id      String
+  name    String
+  country String
+}
+
+type RecipientDetails {
+  id      String?
+  name    String
+  country String
+}
+
+type Amount {
+  originalCurrency    String
+  originalAmount      Float
+  destinationCurrency String
+  destinationAmount   Float
+  exchangeRate        Float
+}
+
+enum SourceType {
+  ADMIN
+  SERVICE
 }
 
 enum State {
@@ -149,18 +174,18 @@ enum Mouvement {
   WITHDRAWAL
 }
 
-model Wallet {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// model Wallet {
+//   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//   createdAt DateTime @default(now()) @map("created_at")
+//   updatedAt DateTime @updatedAt @map("updated_at")
 
-  creditWalletId String
+//   creditWalletId String
 
-  apiClient String @default("INTERNAL")
+//   apiClient String @default("INTERNAL")
 
-  paymentProvider PaymentProvider @relation(fields: [owner], references: [id])
-  owner           String          @db.ObjectId
-  transaction     Transaction?
+//   paymentProvider PaymentProvider @relation(fields: [owner], references: [id])
+//   owner           String          @db.ObjectId
+//   transaction     Transaction?
 
-  @@map("wallets")
-}
+//   @@map("wallets")
+// }

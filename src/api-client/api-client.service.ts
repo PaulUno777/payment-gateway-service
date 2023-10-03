@@ -1,36 +1,55 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import * as crypto from 'crypto';
-import { Observable, catchError, firstValueFrom, from, map } from 'rxjs';
+import { Observable, catchError, from, map, switchMap } from 'rxjs';
 import { ApiClient, RoleType } from '@prisma/client';
-import { ConnectionErrorException, PrismaService } from '@app/common';
+import { ConnectionErrorException } from '@app/common';
 import { CreateApiClientReq } from './dto/create-api-client.dto';
 import { UpdateApiClientReq } from './dto/update-api-client.dto';
 import { GetTokenRes } from './dto/get-token.dto copy';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '@app/common/prisma';
 
 @Injectable()
 export class ApiClientService {
+  private readonly logger = new Logger(ApiClientService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
   ) {}
 
-  create(createDto: CreateApiClientReq): Observable<ApiClient> {
-    const keys = this.generateKeysPaire();
-    const newData = {
-      ...createDto,
-      apiKey: keys.apiKey,
-      secretKey: keys.secretKey,
-    };
-    return from(this.prisma.apiClient.create({ data: newData })).pipe(
+  create(
+    createDto: CreateApiClientReq,
+  ): Observable<{ message: string; entity: ApiClient }> {
+    this.logger.log('Registering a new API client ...');
+
+    return from(this.prisma.apiClient.create({ data: createDto })).pipe(
+      switchMap((response) => {
+        const { apiKey, secretKey } = this.generateKeysPaire(response.id);
+        return from(
+          this.prisma.apiClient.update({
+            where: { id: response.id },
+            data: {
+              apiKey,
+              secretKey,
+            },
+          }),
+        ).pipe(
+          map((response) => {
+            return { message: 'Registered successfully', entity: response };
+          }),
+        );
+      }),
       catchError((error) => {
         if (error.code === 'P2002') {
           // Handle unique constraint violation
-          throw new ConflictException('Make sure all property are uniques');
+          throw new ConflictException(
+            'Ensure that all properties required as unique are unique',
+          );
         } else {
           throw new ConnectionErrorException(
             `Something went wrong with data source \n ${error}`,
@@ -54,6 +73,7 @@ export class ApiClientService {
   }
 
   findAll(): Observable<ApiClient[]> {
+    this.logger.log('Finding all API clients ...');
     return from(this.prisma.apiClient.findMany()).pipe(
       catchError((error) => {
         throw new ConnectionErrorException(
@@ -63,84 +83,85 @@ export class ApiClientService {
     );
   }
 
-  async findOne(id: string): Promise<ApiClient> {
-    const entity = await this.prisma.apiClient.findFirst({ where: { id: id } });
-    if (!entity) {
-      throw new NotFoundException('API Client not found');
-    }
-    return await firstValueFrom(
-      from(
-        this.prisma.apiClient.findFirst({
-          where: { id: id },
-        }),
-      ).pipe(
-        catchError((error) => {
-          throw new ConnectionErrorException(
-            `Something went wrong with data source \n ${error}`,
-          );
-        }),
-      ),
+  findOne(id: string): Observable<ApiClient> {
+    this.logger.log('Finding API client by id ...');
+    return from(
+      this.prisma.apiClient.findFirstOrThrow({
+        where: { id: id },
+      }),
+    ).pipe(
+      catchError((error) => {
+        if (error.code === 'P2025') throw new NotFoundException();
+        throw new ConnectionErrorException(
+          `Something went wrong with data source \n ${error}`,
+        );
+      }),
     );
   }
 
-  async update(id: string, updateReq: UpdateApiClientReq): Promise<ApiClient> {
-    const entity = await this.prisma.apiClient.findFirst({ where: { id: id } });
-    if (!entity) {
-      throw new NotFoundException('API Client not found');
-    }
-    return await firstValueFrom(
-      from(
-        this.prisma.apiClient.update({
-          where: { id: id },
-          data: updateReq,
-        }),
-      ).pipe(
-        catchError((error) => {
-          throw new ConnectionErrorException(
-            `Something went wrong with data source \n ${error}`,
-          );
-        }),
-      ),
+  update(
+    id: string,
+    updateReq: UpdateApiClientReq,
+  ): Observable<{ message: string; entity: ApiClient }> {
+    this.logger.log('Updating API client ...');
+    return this.findOne(id).pipe(
+      switchMap((entity) => {
+        return from(
+          this.prisma.apiClient.update({
+            where: { id: entity.id },
+            data: updateReq,
+          }),
+        ).pipe(
+          catchError((error) => {
+            throw new ConnectionErrorException(error);
+          }),
+        );
+      }),
+      map((response) => {
+        return { message: 'Updated successfully', entity: response };
+      }),
+      catchError((error) => {
+        throw error;
+      }),
     );
   }
 
-  async toggleActivateState(id: string): Promise<any> {
-    const entity = await this.prisma.apiClient.findFirst({ where: { id: id } });
-    if (!entity) {
-      throw new NotFoundException('API Client not found');
-    }
-    return await firstValueFrom(
-      from(
-        this.prisma.apiClient.update({
-          where: { id: id },
-          data: { isActive: !entity.isActive },
-        }),
-      ).pipe(
-        map((data) => {
-          let message;
-          data.isActive
-            ? (message = { message: 'Api Client activated successfully !' })
-            : (message = { message: 'Api Client desactivated successfully!' });
-          return message;
-        }),
-        catchError((error) => {
-          throw new ConnectionErrorException(
-            `Something went wrong with data source \n ${error}`,
-          );
-        }),
-      ),
+  toggleActivation(id: string): Observable<any> {
+    this.logger.log('Toggle activation state of API client ...');
+    return this.findOne(id).pipe(
+      switchMap((entity) => {
+        return from(
+          this.prisma.apiClient.update({
+            where: { id: id },
+            data: { isActive: !entity.isActive },
+          }),
+        ).pipe(
+          catchError((error) => {
+            throw new ConnectionErrorException(error);
+          }),
+        );
+      }),
+      map((response) => {
+        const message = { message: '' };
+        response.isActive
+          ? (message.message = 'Api Client activated successfully')
+          : (message.message = 'Api Client deactivated successfully');
+        return message;
+      }),
+      catchError((error) => {
+        throw error;
+      }),
     );
   }
 
-  generateKeysPaire() {
-    const secret = 'Random secret key';
+  generateKeysPaire(apiId: string): { apiKey: string; secretKey: string } {
     const apiKey = crypto
-      .createHmac('sha256', secret)
+      .createHmac('sha256', apiId)
       .update(new Date().toString())
       .digest('hex');
 
     const secretKey = crypto
-      .createHmac('sha256', secret)
+      .createHmac('sha256', apiId)
       .update(apiKey)
       .digest('hex');
 
@@ -155,7 +176,7 @@ export class ApiClientService {
       {
         sub: apiId,
         apiKey,
-        role: RoleType.client_manager,
+        role: RoleType.api_client,
       },
       {
         expiresIn: 3600,
@@ -163,9 +184,9 @@ export class ApiClientService {
     );
 
     return {
-      access_token: token,
-      token_type: 'Bearer',
-      expires_in: 3600,
+      accessToken: token,
+      tokenType: 'Bearer',
+      expiresIn: 3600,
     };
   }
 }

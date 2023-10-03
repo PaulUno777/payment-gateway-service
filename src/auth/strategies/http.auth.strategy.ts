@@ -31,7 +31,7 @@ export class HttpAuthStrategy extends PassportStrategy(BasicStrategy, 'basic') {
     return {
       sub: apiClient.id,
       email: apiClient.apiKey,
-      role: RoleType.client_manager,
+      role: RoleType.api_client,
     };
   }
 }
