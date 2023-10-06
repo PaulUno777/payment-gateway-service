@@ -42,7 +42,7 @@ RUN ls dist
 ENV NODE_ENV production
 
 # Running `yarn install` removes the existing node_modules directory and passing in --only=production ensures that only the production dependencies are installed. This ensures that the node_modules directory is as optimized as possible
-RUN yarn install --frozen-lockfile --production && yarn cache clean
+RUN yarn workspaces focus --production && yarn cache clean
 
 RUN ls
 
