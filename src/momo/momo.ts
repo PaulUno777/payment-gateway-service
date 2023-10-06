@@ -10,11 +10,14 @@ export interface UserInfosRequest {
 }
 
 export interface UserInfosResponse {
-  firstname: string;
-  lastname: string;
-  gender: string;
-  birthdate: string;
-  locale: string;
+  success: boolean;
+  message: string;
+  providerResponse: ProviderResponse | undefined;
+}
+
+export interface UserData {
+  firstname?: string;
+  lastname?: string;
 }
 
 export interface StatusRequest {
@@ -35,9 +38,8 @@ export interface FinanceRequest {
   amount: number;
   payerPhone: string;
   description: string;
-  callbackUrl: string;
   externalId: string;
-  payToken: string;
+  payToken?: string;
   providerCode: string;
   apiClient: string;
 }
@@ -58,11 +60,12 @@ export interface ProviderResponse {
   customer?: Payer | undefined;
   owner?: Payer | undefined;
   payToken?: string;
+  userData?: UserData | undefined;
 }
 
 export interface Payer {
-  partyIdType: string;
-  partyId: string;
+  partyIdType?: string;
+  partyId?: string;
 }
 
 export const MOMO_PACKAGE_PACKAGE_NAME = 'momo_package';

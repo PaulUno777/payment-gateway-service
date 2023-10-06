@@ -3,7 +3,9 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "assets": ["../proto/**/*"],
+    "assets": [
+      "../proto/**/*"
+    ],
     "watchAssets": true,
     "deleteOutDir": true,
     "webpack": true
@@ -16,6 +18,15 @@
       "sourceRoot": "libs/common/src",
       "compilerOptions": {
         "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    },
+    "phone-helper": {
+      "type": "library",
+      "root": "libs/phone-helper",
+      "entryFile": "index",
+      "sourceRoot": "libs/phone-helper/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/phone-helper/tsconfig.lib.json"
       }
     }
   }

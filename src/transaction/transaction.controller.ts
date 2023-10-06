@@ -10,7 +10,9 @@ import {
 import { TransactionService } from './transaction.service';
 import { CreateTransactionRequest } from './dto/create-transaction.dto';
 import { UpdateTransactionRequest } from './dto/update-transaction.dto';
+import { IsPublic } from '@app/common';
 
+@IsPublic()
 @Controller('transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
@@ -22,7 +24,7 @@ export class TransactionController {
 
   @Get()
   findAll() {
-    return this.transactionService.findAll();
+    return this.transactionService.test('CM');
   }
 
   @Get(':id')

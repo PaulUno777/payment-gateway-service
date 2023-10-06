@@ -23,6 +23,12 @@
       ],
       "@app/common/*": [
         "libs/common/src/*"
+      ],
+      "@app/phone-helper": [
+        "libs/phone-helper/src"
+      ],
+      "@app/phone-helper/*": [
+        "libs/phone-helper/src/*"
       ]
     }
   }

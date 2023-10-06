@@ -10,6 +10,10 @@ export class ProviderParams {
   @ApiProperty()
   isWithdrawalAvailable: boolean;
 
+  @IsBoolean()
+  @ApiProperty()
+  isCustomerInfoAvailable: boolean;
+
   @Min(1)
   @ApiProperty()
   minimumThreshold: number;

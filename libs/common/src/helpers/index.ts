@@ -1,1 +1,1 @@
-export * from './bcrypt-hash.helper'
+export * from './bcrypt-hash.helper';

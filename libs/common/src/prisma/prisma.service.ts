@@ -24,7 +24,11 @@ export class PrismaService
     await this.$disconnect();
   }
 
-  async paginate<T>(model: string, pageable: Pageable): Promise<Page<T>> {
+  async paginate<T>(
+    model: string,
+    pageable: Pageable,
+    filter,
+  ): Promise<Page<T>> {
     const { page = 1, size = 20 } = pageable;
     const skip = (page - 1) * size;
 

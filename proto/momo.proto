@@ -15,11 +15,15 @@ message UserInfosRequest {
 }
 
 message UserInfosResponse {
+    bool success = 1;
+    string message = 2;
+    ProviderResponse providerResponse = 3;
+}
+
+
+message UserData{
     string firstname = 1;
     string lastname = 2;
-    string gender = 3;
-    string birthdate = 4;
-    string locale = 5;
 }
 
 message StatusRequest {
@@ -29,7 +33,7 @@ message StatusRequest {
     string providerCode = 4;
 }
 
-message StatusResponse{
+message StatusResponse {
     bool success = 1;
     string message = 2;
     ProviderResponse providerResponse = 3;
@@ -40,11 +44,10 @@ message FinanceRequest{
     double amount = 2;
     string payerPhone = 3;
     string description = 4;
-    string callbackUrl = 5;
-    string externalId = 6;
-    string payToken = 7;
-    string providerCode = 8;
-    string apiClient = 9;
+    string externalId = 5;
+    string payToken = 6;
+    string providerCode = 7;
+    string apiClient = 8;
 }
 
 message FinanceResponse {
@@ -63,6 +66,7 @@ message ProviderResponse {
     Payer customer = 7;
     Payer owner = 8;
     string payToken = 9;
+    UserData userData = 10;
 }
 
 message Payer{

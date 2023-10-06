@@ -106,17 +106,17 @@ model Transaction {
   createdAt   DateTime  @default(now())
   CompletedAt DateTime? @updatedAt
 
-  source            Source
-  senderDetails     SenderDetails
-  recipientDetails  RecipientDetails
-  amount            Amount
-  paymentPrividerId String
-  fees              Float
-  description       String?
-  callbackUrl       String?
-  payToken          String?
-  state             State            @default(PENDING)
-  mouvement         Mouvement
+  source           Source
+  senderDetails    SenderDetails
+  recipientDetails RecipientDetails
+  amount           Amount
+  PrividerCode     ProviderCode?
+  fees             Float            @default(0)
+  description      String?
+  callbackUrl      String?
+  payToken         String?
+  state            State            @default(PENDING)
+  mouvement        Mouvement
 
   // wallet   Wallet? @relation(fields: [walletId], references: [id])
   // walletId String? @unique @db.ObjectId
@@ -125,8 +125,8 @@ model Transaction {
 }
 
 type ExecutionReport {
-  startLog       String?  @default("")
-  startSignature String?  @default("")
+  startLog       String? @default("")
+  startSignature String? @default("")
   endLog         String?
   endSignature   String?
 }
@@ -145,8 +145,8 @@ type SenderDetails {
 
 type RecipientDetails {
   id      String?
-  name    String
-  country String
+  name    String?
+  country String  @default("CM")
 }
 
 type Amount {
