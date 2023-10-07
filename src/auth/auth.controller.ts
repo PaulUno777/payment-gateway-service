@@ -51,21 +51,25 @@ export class AuthController {
     return this.authService.signin(userDto);
   }
 
+  @ApiBearerAuth('jwt-refresh')
+  @UseGuards(RefreshTokenGard)
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({
+    description: 'Returns authentification tokens',
+    type: AuthUserRes,
+  })
+  @ApiOperation({ summary: 'Login with refresh token' })
+  refresh(@CurrentUser() user: any): Promise<AuthUserRes> {
+    return this.authService.refreshTokens(user['sub'], user['refreshToken']);
+  }
+
   @ApiBearerAuth('jwt-auth')
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Logout by deleting refresh token' })
   logout(@CurrentUser('sub') userId: any) {
     return this.authService.logout(userId);
-  }
-
-  @ApiBearerAuth('jwt-refresh')
-  @UseGuards(RefreshTokenGard)
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login with refresh token' })
-  refresh(@CurrentUser() user: any): Promise<AuthUserRes> {
-    return this.authService.refreshTokens(user['sub'], user['refreshToken']);
   }
 
   @IsPublic()

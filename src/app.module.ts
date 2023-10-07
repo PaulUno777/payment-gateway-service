@@ -9,6 +9,7 @@ import { MomoModule } from './momo/momo.module';
 import { PaymentProviderModule } from './payment-provider/payment-provider.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { AuthTokenGard, HasRoleGuard, LoggerMiddleware } from '@app/common';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuthTokenGard, HasRoleGuard, LoggerMiddleware } from '@app/common';
     MomoModule,
     PaymentProviderModule,
     TransactionModule,
+    UserModule,
   ],
   providers: [
     {

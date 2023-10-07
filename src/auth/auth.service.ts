@@ -1,8 +1,8 @@
 import {
   ConflictException,
-  ForbiddenException,
   Injectable,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConnectionErrorException, hashData, verifyHash } from '@app/common';
@@ -43,14 +43,14 @@ export class AuthService {
 
   async signin(body: AuthUserReq): Promise<AuthUserRes> {
     const user = await this.prisma.user.findUnique({
-      where: { email: body.email, isActive: true },
+      where: { email: body.email, isActive: true, isDeleted: false },
     });
 
-    if (!user) throw new ForbiddenException('Access denied');
+    if (!user) throw new UnauthorizedException('Access denied');
 
     const pwMatch = await verifyHash(user.password, body.password);
 
-    if (!pwMatch) throw new ForbiddenException('Access denied');
+    if (!pwMatch) throw new UnauthorizedException('Access denied');
 
     //get tokens (login)
     const tokens = await this.getTokens(user.id, user.email, user.role);
@@ -75,10 +75,10 @@ export class AuthService {
       where: { id: userId, refreshToken: { not: null }, isActive: true },
     });
     if (!user || !user.refreshToken)
-      throw new ForbiddenException('Access Denied');
+      throw new UnauthorizedException('Access Denied');
 
     const rtMatch = await verifyHash(user.refreshToken, refreshToken);
-    if (!rtMatch) throw new ForbiddenException('Access Denied');
+    if (!rtMatch) throw new UnauthorizedException('Access Denied');
 
     //get tokens (login)
     const tokens = await this.getTokens(user.id, user.email, user.role);
