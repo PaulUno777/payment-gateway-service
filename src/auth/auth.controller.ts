@@ -25,19 +25,19 @@ import { AuthGuard } from '@nestjs/passport';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @IsPublic()
-  @Post('local/signup')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiCreatedResponse({
-    description: 'Returns authentification tokens',
-    type: AuthUserRes,
-  })
-  @ApiOperation({
-    summary: 'Register in with email and password (for test purpose only)',
-  })
-  signup(@Body() userDto: AuthUserReq): Promise<AuthUserRes> {
-    return this.authService.signup(userDto);
-  }
+  // @IsPublic()
+  // @Post('local/signup')
+  // @HttpCode(HttpStatus.CREATED)
+  // @ApiCreatedResponse({
+  //   description: 'Returns authentification tokens',
+  //   type: AuthUserRes,
+  // })
+  // @ApiOperation({
+  //   summary: 'Register in with email and password (for test purpose only)',
+  // })
+  // signup(@Body() userDto: AuthUserReq): Promise<AuthUserRes> {
+  //   return this.authService.signup(userDto);
+  // }
 
   @IsPublic()
   @Post('local/signin')

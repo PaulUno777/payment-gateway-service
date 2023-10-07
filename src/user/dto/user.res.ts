@@ -1,15 +1,40 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, Matches, MinLength } from 'class-validator';
+import { RoleType } from '@prisma/client';
 
 export class UserRes {
-  @IsEmail()
-  @ApiProperty({ default: 'abc@gmail.com' })
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+
+  @ApiProperty()
+  uid: string;
+
+  @ApiProperty()
   email: string;
-  @MinLength(8)
-  @Matches(/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,}$/, {
-    message:
-      'the password must be at least 8 characters and contain numbers, special characters and alphabetic characters',
-  })
+
+  @ApiProperty()
+  username: string;
+
   @ApiProperty()
   password: string;
+
+  @ApiProperty()
+  firstName: string;
+
+  @ApiProperty()
+  lastName: string;
+
+  @ApiProperty()
+  phone: string;
+
+  @ApiProperty()
+  isActive: boolean;
+
+  @ApiProperty()
+  role: RoleType;
 }
