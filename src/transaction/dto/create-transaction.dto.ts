@@ -1,4 +1,4 @@
-import { Mouvement, ProviderCode } from '@prisma/client';
+import { Mouvement, OperatorCode, ProviderCode } from '@prisma/client';
 import {
   Amount,
   RecipientDetails,
@@ -15,7 +15,7 @@ export class CreateTransactionRequest {
 
   amount: Amount;
 
-  PrividerCode: ProviderCode;
+  operatorCode: OperatorCode;
 
   callbackUrl?: string;
 
@@ -24,4 +24,6 @@ export class CreateTransactionRequest {
   description: string;
 
   mouvement: Mouvement;
+
+  providerCode: ProviderCode;
 }

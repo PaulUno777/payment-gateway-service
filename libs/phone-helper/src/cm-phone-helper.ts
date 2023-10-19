@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ProviderCode } from '@prisma/client';
+import { OperatorCode } from '@prisma/client';
 import parsePhoneNumberFromString, { CountryCode } from 'libphonenumber-js';
 import { IPhoneHelper } from '@app/common/interfaces';
 
@@ -15,7 +15,7 @@ export class CmPhoneHelper implements IPhoneHelper {
     return number ? number.formatInternational().replace(/[\s+]/g, '') : '';
   }
 
-  getProviderCodeByMsisdn(phoneNumber: string): ProviderCode {
+  getProviderCodeByMsisdn(phoneNumber: string): OperatorCode {
     if (phoneNumber.length != 9 && phoneNumber.length != 12)
       throw new BadRequestException(
         'The provided phoneNumber is not valid for this country',
@@ -71,9 +71,9 @@ export class CmPhoneHelper implements IPhoneHelper {
         : phoneNumber.substring(0, 3);
 
     if (MTN.includes(prefix)) {
-      return ProviderCode.MTN_MOBILE_MONEY;
+      return OperatorCode.MTN_MOBILE_MONEY;
     } else if (ORANGE.includes(prefix)) {
-      return ProviderCode.ORANGE_MONEY;
+      return OperatorCode.ORANGE_MONEY;
     } else {
       throw new BadRequestException(
         'The provided phoneNumber is not valid for this country',

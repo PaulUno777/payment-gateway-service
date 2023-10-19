@@ -76,6 +76,7 @@ model PaymentProvider {
   logo         String?
   isActive     Boolean        @default(true)
   params       ProviderParams
+  Transaction  Transaction[]
 
   @@map("payment_providers")
 }
@@ -94,9 +95,13 @@ enum ProviderType {
   CASH
 }
 
-enum ProviderCode {
+enum OperatorCode {
   ORANGE_MONEY
   MTN_MOBILE_MONEY
+}
+
+enum ProviderCode {
+  MOBILE_MONEY_API
   INTOUCH
   AUTO_USSD
 }
@@ -110,7 +115,7 @@ model Transaction {
   senderDetails    SenderDetails
   recipientDetails RecipientDetails
   amount           Amount
-  PrividerCode     ProviderCode
+  operatorCode     OperatorCode
   fees             Float            @default(0)
   description      String?
   callbackUrl      String?
@@ -118,6 +123,9 @@ model Transaction {
   state            State            @default(PENDING)
   mouvement        Mouvement
   report           ExecutionReport?
+
+  provider     PaymentProvider? @relation(fields: [providerCode], references: [code])
+  providerCode ProviderCode
 
   @@map("transactions")
 }

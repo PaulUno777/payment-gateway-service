@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsMobilePhone, IsString, Min } from 'class-validator';
 
 export class FinanceRequest {
@@ -32,7 +32,6 @@ export class FinanceRequest {
   @IsIn(['MTN_MOBILE_MONEY', 'ORANGE_MONEY', 'INTOUCH'])
   providerCode: string;
 
-  @ApiProperty()
-  @IsString()
+  @ApiPropertyOptional()
   apiClient: string;
 }

@@ -12,24 +12,32 @@ import {
 import { Observable } from 'rxjs';
 import { ClientGrpc } from '@nestjs/microservices';
 import { INTOUCH_PACKAGE_NAME } from '@app/common/constants';
+import { PaymentOperator } from '@app/common/abstactions';
+import { ProviderCode } from '@prisma/client';
 
 @Injectable()
-export class IntouchService implements PaymentClient, OnModuleInit {
+export class IntouchService extends PaymentOperator implements OnModuleInit {
   private paymentService: PaymentClient;
 
-  constructor(@Inject(INTOUCH_PACKAGE_NAME) private client: ClientGrpc) {}
-  getAccountBalance(request: VoidNoParam): Observable<Amount> {
-    return this.paymentService.getAccountBalance(request);
-  }
-  checkTransactionStatus(request: StatusRequest): Observable<StatusResponse> {
-    return this.paymentService.checkTransactionStatus(request);
-  }
-  cashIn(request: FinanceRequest): Observable<FinanceResponse> {
-    return this.paymentService.cashIn(request);
+  constructor(@Inject(INTOUCH_PACKAGE_NAME) private client: ClientGrpc) {
+    super();
+    this.code = ProviderCode.INTOUCH;
   }
 
   onModuleInit() {
     this.paymentService =
       this.client.getService<PaymentClient>(PAYMENT_SERVICE_NAME);
+  }
+
+  getAccountBalance(request: VoidNoParam): Observable<Amount> {
+    return this.paymentService.getAccountBalance(request);
+  }
+
+  checkTransactionStatus(request: StatusRequest): Observable<StatusResponse> {
+    return this.paymentService.checkTransactionStatus(request);
+  }
+
+  cashIn(request: FinanceRequest): Observable<FinanceResponse> {
+    return this.paymentService.cashIn(request);
   }
 }

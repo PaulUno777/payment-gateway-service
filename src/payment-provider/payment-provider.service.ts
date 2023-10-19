@@ -5,7 +5,6 @@ import { ConnectionErrorException } from '@app/common';
 import { Observable, catchError, from, map, switchMap } from 'rxjs';
 import { PaymentProvider, ProviderCode } from '@prisma/client';
 import { PrismaService } from '@app/common/prisma';
-import { arrayBuffer } from 'stream/consumers';
 
 @Injectable()
 export class PaymentProviderService {
@@ -55,11 +54,12 @@ export class PaymentProviderService {
     this.logger.log('Finding payment provider by code ...');
     return from(
       this.prisma.paymentProvider.findFirstOrThrow({
-        where: { code: code },
+        where: { code: code, isActive: true },
       }),
     ).pipe(
       catchError((error) => {
-        if (error.code === 'P2025') throw new NotFoundException();
+        if (error.code === 'P2025')
+          throw new NotFoundException('Provider Not Found');
         throw new ConnectionErrorException();
       }),
     );

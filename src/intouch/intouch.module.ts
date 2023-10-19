@@ -22,5 +22,6 @@ import { INTOUCH_PACKAGE_NAME } from '@app/common/constants';
   ],
   controllers: [IntouchController],
   providers: [IntouchService],
+  exports: [IntouchService],
 })
 export class IntouchModule {}

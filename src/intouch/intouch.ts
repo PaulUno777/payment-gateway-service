@@ -22,10 +22,10 @@ export interface StatusResponse {
 }
 
 export interface FinanceRequest {
-  payerPhone: string;
-  amount: number;
-  id: string;
-  callbackUrl: string;
+  payerPhone?: string;
+  amount?: number;
+  id?: string;
+  callbackUrl?: string;
 }
 
 export interface FinanceResponse {
