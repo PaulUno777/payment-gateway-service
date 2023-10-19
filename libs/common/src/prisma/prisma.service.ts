@@ -27,7 +27,7 @@ export class PrismaService
   async paginate<T>(
     model: string,
     pageable: Pageable,
-    filter,
+    filter: Filter,
   ): Promise<Page<T>> {
     const { page = 1, size = 20 } = pageable;
     const skip = (page - 1) * size;
@@ -45,8 +45,15 @@ export class PrismaService
         totalPages: 0,
       },
     };
-    let isSorted = false;
 
+    // Add the filter to the query if it is provided
+    if (filter) {
+      if (filter.where) query['where'] = filter.where;
+      if (filter.include) query['where'] = filter.include;
+    }
+
+    // Add the orderBy to the query if it is provided
+    let isSorted = false;
     if (
       pageable.sort &&
       pageable.sort.length > 0 &&
@@ -59,7 +66,7 @@ export class PrismaService
         };
       });
       query['orderBy'] = sort;
-      resultPage['sort'] = sort;
+      resultPage.metaData.sort = sort;
       isSorted = true;
     }
 
@@ -107,7 +114,7 @@ type MetaData = {
   page: number;
   size: number;
   totalPages: number;
-  sort?: Array<{ [key: string]: 'asc' | 'desc' }>;
+  sort?: Array<{ [key: string]: 'asc' | 'desc' | string }>;
 };
 
 export interface Page<T> {
@@ -121,6 +128,11 @@ export interface Pageable {
   size?: number;
   sort?: string[];
   route?: string;
+}
+
+export interface Filter {
+  where?: any;
+  include?: any;
 }
 
 type Links = {

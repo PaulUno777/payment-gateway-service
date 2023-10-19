@@ -119,9 +119,6 @@ model Transaction {
   mouvement        Mouvement
   report           ExecutionReport?
 
-  // wallet   Wallet? @relation(fields: [walletId], references: [id])
-  // walletId String? @unique @db.ObjectId
-
   @@map("transactions")
 }
 

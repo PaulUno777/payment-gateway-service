@@ -8,10 +8,10 @@ import {
   Delete,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { CreateTransactionRequest } from './dto/create-transaction.dto';
 import { UpdateTransactionRequest } from './dto/update-transaction.dto';
 import { IsPublic } from '@app/common';
 import { ApiTags } from '@nestjs/swagger';
+import { AllTransactionRequest } from './dto/transaction-request.dto';
 
 @IsPublic()
 @ApiTags('Transactions')
@@ -19,9 +19,9 @@ import { ApiTags } from '@nestjs/swagger';
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
-  @Post()
-  create(@Body() createRequest: CreateTransactionRequest) {
-    return this.transactionService.create(createRequest);
+  @Post('all-paginated')
+  allPaginated(@Body() request: AllTransactionRequest) {
+    return this.transactionService.allPaginated(request);
   }
 
   @Get()

@@ -8,7 +8,7 @@ import {
   SenderDetails,
 } from '../../../libs/common/src/types/transaction.type.dto';
 
-export class TransactionRequest {
+export class AllTransactionRequest {
   @ApiProperty({ description: '' })
   @ValidateNested()
   @Type(() => SenderDetails)

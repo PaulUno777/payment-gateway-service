@@ -10,6 +10,7 @@ import { PhoneHelperService } from '@app/phone-helper';
 import { PaymentProviderService } from 'src/payment-provider/payment-provider.service';
 import { Observable, catchError, from, map, switchMap } from 'rxjs';
 import { UserInfo } from './dto/operation-response.dto';
+import { Transaction } from '@prisma/client';
 
 @Injectable()
 export class OperationService {
@@ -20,17 +21,23 @@ export class OperationService {
     private readonly paymentProviderService: PaymentProviderService,
   ) {}
 
-  getSubscriberInfos(country: string, msisdn: string): Observable<UserInfo> {
+  getSubscriberInfos(alphacode: string, msisdn: string): Observable<UserInfo> {
     this.logger.log("Retrieving the subscriber's information");
+
+    const country = alphacode.toUpperCase();
+
     const helper = this.phoneHelper.load(country);
+
     const formatedNumber = helper.formatPhoneNumber(msisdn, country);
+
     const providerCode = helper.getProviderCodeByMsisdn(formatedNumber);
+
     return from(this.paymentProviderService.findByCode(providerCode)).pipe(
       switchMap((provider) => {
         console.log(provider);
         if (!provider.params.isCustomerInfoAvailable || !provider.isActive) {
           throw new ServiceUnavailableException(
-            'This Service is currently unavailable for this provider',
+            'This service is currently unavailable on this provider',
           );
         }
         const request = {
@@ -50,8 +57,6 @@ export class OperationService {
         throw error;
       }),
     );
-
-    throw new Error('Method not implemented.');
   }
 
   getStatus(id: string) {
@@ -67,8 +72,9 @@ export class OperationService {
     return 'This action adds a new operation';
   }
 
-  findAll() {
-    return `This action returns all operation`;
+  loadProvider(transaction: Transaction) {
+    if (transaction.PrividerCode)
+      return this.paymentProviderService.findByCode(transaction.PrividerCode);
   }
 
   findOne(id: number) {

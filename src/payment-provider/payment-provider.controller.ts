@@ -12,7 +12,7 @@ import { PaymentProviderService } from './payment-provider.service';
 import { CreatePaymentProviderRequest } from './dto/create-payment-provider.dto';
 import { UpdatePaymentProviderRequest } from './dto/update-payment-provider.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { RoleType } from '@prisma/client';
+import { ProviderCode, RoleType } from '@prisma/client';
 import { HasRole } from '@app/common';
 
 @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
@@ -59,5 +59,12 @@ export class PaymentProviderController {
   @Patch(':id/toggle-activation')
   toggleActivation(@Param('id') id: string) {
     return this.paymentProviderService.toggleActivation(id);
+  }
+
+  @ApiBearerAuth('jwt-auth')
+  @HttpCode(HttpStatus.OK)
+  @Get('provider/code')
+  findAllProviderCode() {
+    return this.paymentProviderService.findAllProviderCode();
   }
 }

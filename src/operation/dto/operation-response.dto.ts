@@ -8,8 +8,8 @@ export class OperationResponse {
   data: TransactionEntity;
 }
 export class UserInfo {
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: '', default: 'CM' })
   firstName: string;
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: '', default: '679218039' })
   lastName: string;
 }

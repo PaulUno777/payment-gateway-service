@@ -5,6 +5,7 @@ import { ConnectionErrorException } from '@app/common';
 import { Observable, catchError, from, map, switchMap } from 'rxjs';
 import { PaymentProvider, ProviderCode } from '@prisma/client';
 import { PrismaService } from '@app/common/prisma';
+import { arrayBuffer } from 'stream/consumers';
 
 @Injectable()
 export class PaymentProviderService {
@@ -116,5 +117,11 @@ export class PaymentProviderService {
         throw error;
       }),
     );
+  }
+
+  findAllProviderCode() {
+    const ProviderArray = Object.values(ProviderCode);
+    console.log('ProviderArray', ProviderArray);
+    return { data: ProviderArray };
   }
 }

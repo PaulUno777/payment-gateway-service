@@ -5,9 +5,21 @@ import { PhoneHelperService } from '@app/phone-helper';
 import { catchError, from } from 'rxjs';
 import { PrismaService } from '@app/common/prisma';
 import { ConnectionErrorException } from '@app/common';
+import { AllTransactionRequest } from './dto/transaction-request.dto';
+import { ProviderCode } from '@prisma/client';
 
 @Injectable()
 export class TransactionService {
+  allPaginated(request: AllTransactionRequest) {
+    return {
+      data: [
+        ProviderCode.AUTO_USSD,
+        ProviderCode.INTOUCH,
+        ProviderCode.MTN_MOBILE_MONEY,
+        ProviderCode.ORANGE_MONEY,
+      ],
+    };
+  }
   constructor(
     private readonly prisma: PrismaService,
     private phoneHelper: PhoneHelperService,
