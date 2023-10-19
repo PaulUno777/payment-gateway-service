@@ -1,7 +1,14 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  BadRequestException,
+} from '@nestjs/common';
 import { OperationService } from './operation.service';
 import { CreateOperationDto } from './dto/create-operation.dto';
-import { HasRole, IsPublic } from '@app/common';
+import { HasRole } from '@app/common';
 import { RoleType } from '@prisma/client';
 import {
   ApiBearerAuth,
@@ -68,6 +75,8 @@ export class OperationController {
     @Param('countryAlpha2') country: string,
     @Param('msisdn') msisdn: string,
   ): Observable<UserInfo> {
+    if (country.length != 2 || /\D/.test(msisdn))
+      throw new BadRequestException('make sure your parameters are valid');
     return this.operationService.getSubscriberInfos(country, msisdn);
   }
 }
