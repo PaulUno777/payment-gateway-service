@@ -15,7 +15,7 @@ export class CmPhoneHelper implements IPhoneHelper {
     return number ? number.formatInternational().replace(/[\s+]/g, '') : '';
   }
 
-  getProviderCodeByMsisdn(phoneNumber: string): string {
+  getProviderCodeByMsisdn(phoneNumber: string): ProviderCode {
     if (phoneNumber.length != 9 && phoneNumber.length != 12)
       throw new BadRequestException(
         'The provided phoneNumber is not valid for this country',

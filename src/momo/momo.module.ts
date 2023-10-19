@@ -22,5 +22,6 @@ import { MOMO_PACKAGE_NAME } from '@app/common/constants';
   ],
   controllers: [MomoController],
   providers: [MomoService],
+  exports: [MomoService],
 })
 export class MomoModule {}

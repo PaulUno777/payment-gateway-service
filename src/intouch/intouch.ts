@@ -1,105 +1,80 @@
 /* eslint-disable */
-import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
+import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { Observable } from "rxjs";
 
-export const protobufPackage = 'paymentPackage';
+export const protobufPackage = "intouchPackage";
 
-export interface voidNoParam {}
-
-export interface bookId {
-  id: number;
+export interface VoidNoParam {
 }
 
-export interface amount {
+export interface Amount {
   amount: number;
 }
 
-export interface transactionId {
-  transactionId: string;
+export interface StatusRequest {
+  id: string;
 }
 
-export interface transactionStatus {
-  serviceId: string;
-  guTransactionId: string;
-  status: string;
-  transactionDate: string;
-  recipientId: string;
-  amount: string;
-  recipientInvoiceId: string;
-}
-
-export interface cashInReq {
-  phoneNumber: string;
-  amount: number;
-}
-
-export interface cashInRes {
-  serviceId: string;
-  guTransactionId: string;
-  status: string;
-  recipientPhoneNumber: string;
-  amount: string;
+export interface StatusResponse {
+  success: boolean;
   message: string;
+  providerResponse: ProviderResponse | undefined;
 }
 
-export const INTOUCH_PACKAGE_PACKAGE_NAME = 'paymentPackage';
+export interface FinanceRequest {
+  payerPhone: string;
+  amount: number;
+  id: string;
+  callbackUrl: string;
+}
+
+export interface FinanceResponse {
+  success: boolean;
+  message: string;
+  providerResponse: ProviderResponse | undefined;
+}
+
+export interface ProviderResponse {
+  code: number;
+  status: string;
+  financialTransactionId: string;
+  amount: string;
+  externalId: string;
+  message: string;
+  payToken: string;
+}
+
+export const INTOUCH_PACKAGE_PACKAGE_NAME = "intouchPackage";
 
 export interface PaymentClient {
-  getAccountBalance(request: voidNoParam): Observable<amount>;
+  getAccountBalance(request: VoidNoParam): Observable<Amount>;
 
-  checkTransactionStatus(request: transactionId): Observable<transactionStatus>;
+  checkTransactionStatus(request: StatusRequest): Observable<StatusResponse>;
 
-  cashIn(request: cashInReq): Observable<cashInRes>;
+  cashIn(request: FinanceRequest): Observable<FinanceResponse>;
 }
 
 export interface PaymentController {
-  getAccountBalance(
-    request: voidNoParam,
-  ): Promise<amount> | Observable<amount> | amount;
+  getAccountBalance(request: VoidNoParam): Promise<Amount> | Observable<Amount> | Amount;
 
-  checkTransactionStatus(
-    request: transactionId,
-  ):
-    | Promise<transactionStatus>
-    | Observable<transactionStatus>
-    | transactionStatus;
+  checkTransactionStatus(request: StatusRequest): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
 
-  cashIn(
-    request: cashInReq,
-  ): Promise<cashInRes> | Observable<cashInRes> | cashInRes;
+  cashIn(request: FinanceRequest): Promise<FinanceResponse> | Observable<FinanceResponse> | FinanceResponse;
 }
 
 export function PaymentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = [
-      'getAccountBalance',
-      'checkTransactionStatus',
-      'cashIn',
-    ];
+    const grpcMethods: string[] = ["getAccountBalance", "checkTransactionStatus", "cashIn"];
     for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(
-        constructor.prototype,
-        method,
-      );
-      GrpcMethod('Payment', method)(
-        constructor.prototype[method],
-        method,
-        descriptor,
-      );
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcMethod("Payment", method)(constructor.prototype[method], method, descriptor);
     }
     const grpcStreamMethods: string[] = [];
     for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(
-        constructor.prototype,
-        method,
-      );
-      GrpcStreamMethod('Payment', method)(
-        constructor.prototype[method],
-        method,
-        descriptor,
-      );
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcStreamMethod("Payment", method)(constructor.prototype[method], method, descriptor);
     }
   };
 }
 
-export const PAYMENT_SERVICE_NAME = 'Payment';
+export const PAYMENT_SERVICE_NAME = "Payment";

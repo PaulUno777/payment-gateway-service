@@ -11,8 +11,10 @@ import { TransactionService } from './transaction.service';
 import { CreateTransactionRequest } from './dto/create-transaction.dto';
 import { UpdateTransactionRequest } from './dto/update-transaction.dto';
 import { IsPublic } from '@app/common';
+import { ApiTags } from '@nestjs/swagger';
 
 @IsPublic()
+@ApiTags('Transactions')
 @Controller('transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
@@ -29,7 +31,7 @@ export class TransactionController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.transactionService.findOne(+id);
+    return this.transactionService.findOne(id);
   }
 
   @Patch(':id')

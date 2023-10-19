@@ -1,11 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransactionRequest } from './dto/create-transaction.dto';
 import { UpdateTransactionRequest } from './dto/update-transaction.dto';
 import { PhoneHelperService } from '@app/phone-helper';
+import { catchError, from } from 'rxjs';
+import { PrismaService } from '@app/common/prisma';
+import { ConnectionErrorException } from '@app/common';
 
 @Injectable()
 export class TransactionService {
-  constructor(private phoneHelper: PhoneHelperService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private phoneHelper: PhoneHelperService,
+  ) {}
 
   test(country: string) {
     const helper = this.phoneHelper.load(country);
@@ -14,16 +20,30 @@ export class TransactionService {
     return formatedNumber;
   }
 
-  create(createRequest: CreateTransactionRequest) {
-    return 'This action adds a new transaction';
+  create(request: CreateTransactionRequest) {
+    return from(this.prisma.transaction.create({ data: request })).pipe(
+      catchError((error) => {
+        console.error(error);
+        throw new ConnectionErrorException();
+      }),
+    );
   }
 
   findAll() {
     return `This action returns all transaction`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} transaction`;
+  findOne(id: string) {
+    return from(
+      this.prisma.transaction.findFirstOrThrow({ where: { id: id } }),
+    ).pipe(
+      catchError((error) => {
+        console.error(error);
+        if (error.code && error.code === 'P2025')
+          throw new NotFoundException('Transation not found');
+        throw new ConnectionErrorException();
+      }),
+    );
   }
 
   update(id: number, updateRequest: UpdateTransactionRequest) {

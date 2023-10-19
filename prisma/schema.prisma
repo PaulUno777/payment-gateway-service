@@ -110,13 +110,14 @@ model Transaction {
   senderDetails    SenderDetails
   recipientDetails RecipientDetails
   amount           Amount
-  PrividerCode     ProviderCode?
+  PrividerCode     ProviderCode
   fees             Float            @default(0)
   description      String?
   callbackUrl      String?
   payToken         String?
   state            State            @default(PENDING)
   mouvement        Mouvement
+  report           ExecutionReport?
 
   // wallet   Wallet? @relation(fields: [walletId], references: [id])
   // walletId String? @unique @db.ObjectId

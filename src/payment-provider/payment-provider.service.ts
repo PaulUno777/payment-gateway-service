@@ -3,7 +3,7 @@ import { CreatePaymentProviderRequest } from './dto/create-payment-provider.dto'
 import { UpdatePaymentProviderRequest } from './dto/update-payment-provider.dto';
 import { ConnectionErrorException } from '@app/common';
 import { Observable, catchError, from, map, switchMap } from 'rxjs';
-import { PaymentProvider } from '@prisma/client';
+import { PaymentProvider, ProviderCode } from '@prisma/client';
 import { PrismaService } from '@app/common/prisma';
 
 @Injectable()
@@ -42,6 +42,20 @@ export class PaymentProviderService {
     this.logger.log('Finding payment provider by id ...');
     return from(
       this.prisma.paymentProvider.findFirstOrThrow({ where: { id: id } }),
+    ).pipe(
+      catchError((error) => {
+        if (error.code === 'P2025') throw new NotFoundException();
+        throw new ConnectionErrorException();
+      }),
+    );
+  }
+
+  findByCode(code: ProviderCode): Observable<PaymentProvider> {
+    this.logger.log('Finding payment provider by code ...');
+    return from(
+      this.prisma.paymentProvider.findFirstOrThrow({
+        where: { code: code },
+      }),
     ).pipe(
       catchError((error) => {
         if (error.code === 'P2025') throw new NotFoundException();

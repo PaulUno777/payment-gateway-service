@@ -10,18 +10,20 @@ import { PaymentProviderModule } from './payment-provider/payment-provider.modul
 import { TransactionModule } from './transaction/transaction.module';
 import { AuthTokenGard, HasRoleGuard, LoggerMiddleware } from '@app/common';
 import { UserModule } from './user/user.module';
+import { OperationModule } from './operation/operation.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,
+    UserModule,
     ApiClientModule,
+    PaymentProviderModule,
+    OperationModule,
+    TransactionModule,
     IntouchModule,
     MomoModule,
-    PaymentProviderModule,
-    TransactionModule,
-    UserModule,
   ],
   providers: [
     {

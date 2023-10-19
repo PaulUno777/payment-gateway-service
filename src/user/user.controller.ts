@@ -22,7 +22,7 @@ export class UserController {
     description: 'Returns authentification tokens',
     type: UserRes,
   })
-  @ApiOperation({ summary: 'Get current logged user infos' })
+  @ApiOperation({ summary: 'Get informations about currently logged in user' })
   @Get()
   findOne(@CurrentUser('sub') id: string) {
     return this.userService.findOne(id);
