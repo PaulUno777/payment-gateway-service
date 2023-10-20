@@ -24,7 +24,8 @@ export class UserController {
   })
   @ApiOperation({ summary: 'Get informations about currently logged in user' })
   @Get()
-  findOne(@CurrentUser('sub') id: string) {
-    return this.userService.findOne(id);
+  findOne(@CurrentUser() user: any) {
+    console.log('user', user);
+    return this.userService.findOne(user.sub);
   }
 }

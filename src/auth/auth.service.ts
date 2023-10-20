@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConnectionErrorException, hashData, verifyHash } from '@app/common';
-import { RoleType, User } from '@prisma/client';
+import { RoleType, SourceType, User } from '@prisma/client';
 import { AuthUserRes } from './dto/auth-user.res';
 import { AuthUserReq } from './dto/auth-user.req';
 import { GetTokenRes } from 'src/api-client/dto/get-token.dto copy';
@@ -117,6 +117,7 @@ export class AuthService {
           sub: userId,
           email,
           role,
+          type: SourceType.ADMIN,
         },
         {
           expiresIn: '3600s',
@@ -128,6 +129,7 @@ export class AuthService {
           sub: userId,
           email,
           role,
+          type: SourceType.ADMIN,
         },
         {
           expiresIn: 60 * 60 * 24,

@@ -6,6 +6,7 @@ import { PhoneHelperModule } from '@app/phone-helper';
 import { PaymentProviderModule } from 'src/payment-provider/payment-provider.module';
 import { OperatorGatewayLoader } from './operator-gateway.loader';
 import { IntouchModule } from 'src/intouch/intouch.module';
+import { TransactionModule } from 'src/transaction/transaction.module';
 
 @Module({
   controllers: [OperationController],
@@ -15,6 +16,7 @@ import { IntouchModule } from 'src/intouch/intouch.module';
     MomoModule,
     PaymentProviderModule,
     IntouchModule,
+    TransactionModule,
   ],
 })
 export class OperationModule {}

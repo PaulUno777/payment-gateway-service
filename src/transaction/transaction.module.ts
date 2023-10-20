@@ -7,5 +7,6 @@ import { PhoneHelperModule } from '@app/phone-helper';
   controllers: [TransactionController],
   providers: [TransactionService],
   imports: [PhoneHelperModule],
+  exports: [TransactionService],
 })
 export class TransactionModule {}

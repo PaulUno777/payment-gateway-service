@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateTransactionRequest } from './dto/create-transaction.dto';
+import { TransactionRequest } from './dto/transaction-request.dto';
 import { UpdateTransactionRequest } from './dto/update-transaction.dto';
 import { PhoneHelperService } from '@app/phone-helper';
 import { catchError, from } from 'rxjs';
 import { PrismaService } from '@app/common/prisma';
 import { ConnectionErrorException } from '@app/common';
-import { AllTransactionRequest } from './dto/transaction-request.dto';
+import { AllTransactionRequest } from './dto/all-transaction-request.dto';
 
 @Injectable()
 export class TransactionService {
@@ -24,7 +24,7 @@ export class TransactionService {
     return formatedNumber;
   }
 
-  create(request: CreateTransactionRequest) {
+  create(request: TransactionRequest) {
     return from(this.prisma.transaction.create({ data: request })).pipe(
       catchError((error) => {
         console.error(error);
@@ -50,8 +50,18 @@ export class TransactionService {
     );
   }
 
-  update(id: number, updateRequest: UpdateTransactionRequest) {
-    return `This action updates a #${id} transaction`;
+  update(id: string, updateRequest: UpdateTransactionRequest) {
+    return from(
+      this.prisma.transaction.update({
+        where: { id: id },
+        data: updateRequest,
+      }),
+    ).pipe(
+      catchError((error) => {
+        console.error(error);
+        throw new ConnectionErrorException();
+      }),
+    );
   }
 
   remove(id: number) {

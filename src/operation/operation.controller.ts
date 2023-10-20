@@ -7,8 +7,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { OperationService } from './operation.service';
-import { CreateOperationDto } from './dto/create-operation.dto';
-import { HasRole } from '@app/common';
+import { OperationRequest } from './dto/operation-request';
+import { CurrentUser, HasRole } from '@app/common';
 import { RoleType } from '@prisma/client';
 import {
   ApiBearerAuth,
@@ -38,8 +38,8 @@ export class OperationController {
   })
   @ApiOperation({ summary: 'make a payment' })
   @Post('cash-in')
-  cashin(@Body() createOperationDto: CreateOperationDto) {
-    return this.operationService.cashin(createOperationDto);
+  cashin(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
+    return this.operationService.cashin(source, operationRequest);
   }
 
   @ApiBearerAuth('jwt-auth')
@@ -49,8 +49,8 @@ export class OperationController {
   })
   @ApiOperation({ summary: 'Make a disbursement' })
   @Post('cash-out')
-  cashout(@Body() createOperationDto: CreateOperationDto) {
-    return this.operationService.cashout(createOperationDto);
+  cashout(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
+    return this.operationService.cashout(source, operationRequest);
   }
 
   @ApiBearerAuth('jwt-auth')

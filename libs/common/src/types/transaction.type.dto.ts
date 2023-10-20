@@ -1,21 +1,23 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Mouvement, ProviderCode, SourceType } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
-  IsCurrency,
   IsISO31661Alpha2,
   IsNumber,
+  IsNumberString,
+  IsOptional,
   Min,
   ValidateNested,
 } from 'class-validator';
+import { IsCurrencyCode } from '../decorators';
 
 export class ExecutionReport {
   @ApiProperty({ description: '' })
-  startLog?: string;
+  startLog?: any;
   @ApiProperty({ description: '' })
   startSignature?: string;
   @ApiProperty({ description: '' })
-  endLog?: string;
+  endLog?: any;
   @ApiProperty({ description: '' })
   endSignature?: string;
 }
@@ -33,24 +35,28 @@ export class SenderDetails {
   @ApiProperty({ description: '' })
   id: string;
   @ApiProperty({ description: '' })
+  @IsOptional()
   name: string;
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: '', default: 'CM' })
   @IsISO31661Alpha2()
   country: string;
 }
 
 export class RecipientDetails {
   @ApiProperty({ description: '' })
+  @IsNumberString()
   id: string;
-  @ApiProperty({ description: '' })
+  @ApiPropertyOptional({ description: '', default: 'Optional' })
+  @IsOptional()
   name?: string;
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: '', default: 'CM' })
+  @IsISO31661Alpha2()
   country: string;
 }
 
 export class Amount {
   @ApiProperty({ description: 'Original currency' })
-  @IsCurrency()
+  @IsCurrencyCode()
   originalCurrency: string;
 
   @ApiProperty({ description: 'Original amount', default: 1 })
@@ -58,7 +64,7 @@ export class Amount {
   originalAmount: number;
 
   @ApiProperty({ description: 'Destination currency' })
-  @IsCurrency()
+  @IsCurrencyCode()
   destinationCurrency: string;
 
   @ApiProperty({ description: 'Destination amount', default: 1 })
@@ -100,7 +106,8 @@ export class TransactionEntity {
   @Type(() => Amount)
   amount: Amount;
 
-  @ApiProperty({ description: '', default: 'AUTOMATIC' })
+  @ApiPropertyOptional({ description: '' })
+  @IsOptional()
   PrividerCode: ProviderCode;
 
   @ApiProperty({ default: 0 })

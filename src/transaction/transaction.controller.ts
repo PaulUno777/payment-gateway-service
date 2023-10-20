@@ -1,17 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { UpdateTransactionRequest } from './dto/update-transaction.dto';
 import { IsPublic } from '@app/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AllTransactionRequest } from './dto/transaction-request.dto';
+import { AllTransactionRequest } from './dto/all-transaction-request.dto';
 
 @IsPublic()
 @ApiTags('Transactions')
@@ -32,18 +23,5 @@ export class TransactionController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.transactionService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateRequest: UpdateTransactionRequest,
-  ) {
-    return this.transactionService.update(+id, updateRequest);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.transactionService.remove(+id);
   }
 }

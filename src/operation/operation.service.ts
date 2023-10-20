@@ -3,22 +3,31 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { CreateOperationDto } from './dto/create-operation.dto';
-import { UpdateOperationDto } from './dto/update-operation.dto';
-import { MomoService } from 'src/momo/momo.service';
+import { OperationRequest } from './dto/operation-request';
 import { PhoneHelperService } from '@app/phone-helper';
 import { PaymentProviderService } from 'src/payment-provider/payment-provider.service';
 import { Observable, catchError, from, map, switchMap } from 'rxjs';
 import { UserInfo } from './dto/operation-response.dto';
-import { ProviderCode, Transaction } from '@prisma/client';
+import {
+  Mouvement,
+  PaymentProvider,
+  ProviderCode,
+  State,
+} from '@prisma/client';
 import { OperatorGatewayLoader } from './operator-gateway.loader';
-import { UserInfosProvider } from '@app/common/interfaces';
+import {
+  CashInProvider,
+  CashOutProvider,
+  UserInfosProvider,
+} from '@app/common/interfaces';
+import { TransactionService } from 'src/transaction/transaction.service';
 
 @Injectable()
 export class OperationService {
   private readonly logger = new Logger(OperationService.name);
   constructor(
     private phoneHelper: PhoneHelperService,
+    private transactionService: TransactionService,
     private readonly operatorGatewayLoader: OperatorGatewayLoader,
     private readonly paymentProviderService: PaymentProviderService,
   ) {}
@@ -55,9 +64,15 @@ export class OperationService {
 
         return from(userInfosProvider.checkUserInfos(request)).pipe(
           map((response) => {
+            const firstName = response.providerResponse.userData.firstname;
+            const lastName = response.providerResponse.userData.lastname;
+            const fullName = firstName + ' ' + lastName;
             return {
-              firstName: response.providerResponse.userData.firstname,
-              lastName: response.providerResponse.userData.lastname,
+              firstName,
+              lastName,
+              fullName,
+              operator: operatorCode,
+              msisdn: formatedNumber,
             };
           }),
         );
@@ -69,33 +84,195 @@ export class OperationService {
     );
   }
 
+  cashin(currentSource, operationRequest: OperationRequest) {
+    const source = {
+      name: currentSource.email,
+      type: currentSource.type,
+      entityId: currentSource.sub,
+    };
+    const mouvement = Mouvement.WITHDRAWAL;
+    return from(this.loadProvider(operationRequest)).pipe(
+      switchMap((provider) => {
+        if (!provider.params.isWithdrawalAvailable) {
+          throw new ServiceUnavailableException(
+            `Collection is currently unavailable on provider ${provider.code}`,
+          );
+        }
+        return from(
+          this.getSubscriberInfos(
+            operationRequest.recipientDetails.country,
+            operationRequest.recipientDetails.id,
+          ).pipe(
+            switchMap((userInfo) => {
+              const request = {
+                ...operationRequest,
+                source,
+                mouvement,
+                operatorCode: userInfo.operator,
+                providerCode: provider.code,
+              };
+              request.recipientDetails.name = userInfo.fullName;
+              request.recipientDetails.id = userInfo.msisdn;
+              return from(this.transactionService.create(request)).pipe(
+                switchMap((transaction) => {
+                  const provider: CashInProvider =
+                    this.operatorGatewayLoader.load(transaction.providerCode);
+                  const financeRequest = {
+                    id: transaction.id,
+                    amount: transaction.amount.destinationAmount,
+                    payerPhone: transaction.recipientDetails.id,
+                    description: transaction.description,
+                    externalId: transaction.id,
+                    providerCode: transaction.operatorCode,
+                    apiClient: transaction.senderDetails.id,
+                  };
+                  return from(provider.cashIn(financeRequest)).pipe(
+                    switchMap((financeResponse) => {
+                      if (financeResponse.success) {
+                        const update = {
+                          fees: financeResponse.providerResponse.fees ?? 0,
+                          payToken: financeResponse.providerResponse.payToken,
+                          report: {
+                            startLog: financeResponse.providerResponse,
+                            startTrace: 'not implemented yet',
+                          },
+                        };
+                        return from(
+                          this.transactionService.update(
+                            financeRequest.id,
+                            update,
+                          ),
+                        );
+                      }
+                      const update = {
+                        fees: financeResponse.providerResponse.fees ?? 0,
+                        payToken: financeResponse.providerResponse.payToken,
+                        state: State.FAILED,
+                        report: {
+                          startLog: financeResponse.providerResponse,
+                          startTrace: 'not implemented yet',
+                        },
+                      };
+                      return from(
+                        this.transactionService.update(
+                          financeRequest.id,
+                          update,
+                        ),
+                      );
+                    }),
+                  );
+                }),
+              );
+            }),
+          ),
+        );
+      }),
+      catchError((error) => {
+        throw error;
+      }),
+    );
+  }
+
+  cashout(currentSource, operationRequest: OperationRequest) {
+    const source = {
+      name: currentSource.email,
+      type: currentSource.type,
+      entityId: currentSource.sub,
+    };
+    const mouvement = Mouvement.DEPOSIT;
+    return from(this.loadProvider(operationRequest)).pipe(
+      switchMap((provider) => {
+        if (!provider.params.isDepositAvailable) {
+          throw new ServiceUnavailableException(
+            `Collection is currently unavailable on provider ${provider.code}`,
+          );
+        }
+        return from(
+          this.getSubscriberInfos(
+            operationRequest.recipientDetails.country,
+            operationRequest.recipientDetails.id,
+          ).pipe(
+            switchMap((userInfo) => {
+              const request = {
+                ...operationRequest,
+                source,
+                mouvement,
+                operatorCode: userInfo.operator,
+                providerCode: provider.code,
+              };
+              request.recipientDetails.name = userInfo.fullName;
+              request.recipientDetails.id = userInfo.msisdn;
+              return from(this.transactionService.create(request)).pipe(
+                switchMap((transaction) => {
+                  const provider: CashOutProvider =
+                    this.operatorGatewayLoader.load(transaction.providerCode);
+                  const financeRequest = {
+                    id: transaction.id,
+                    amount: transaction.amount.destinationAmount,
+                    payerPhone: transaction.recipientDetails.id,
+                    description: transaction.description,
+                    externalId: transaction.id,
+                    providerCode: transaction.operatorCode,
+                    apiClient: transaction.senderDetails.id,
+                  };
+                  return from(provider.cashOut(financeRequest)).pipe(
+                    switchMap((financeResponse) => {
+                      if (financeResponse.success) {
+                        const update = {
+                          fees: financeResponse.providerResponse.fees ?? 0,
+                          payToken: financeResponse.providerResponse.payToken,
+                          report: {
+                            startLog: financeResponse.providerResponse,
+                            startTrace: 'not implemented yet',
+                          },
+                        };
+                        return from(
+                          this.transactionService.update(
+                            financeRequest.id,
+                            update,
+                          ),
+                        );
+                      }
+                      const update = {
+                        fees: financeResponse.providerResponse.fees ?? 0,
+                        payToken: financeResponse.providerResponse.payToken,
+                        state: State.FAILED,
+                        report: {
+                          startLog: financeResponse.providerResponse,
+                          startTrace: 'not implemented yet',
+                        },
+                      };
+                      return from(
+                        this.transactionService.update(
+                          financeRequest.id,
+                          update,
+                        ),
+                      );
+                    }),
+                  );
+                }),
+              );
+            }),
+          ),
+        );
+      }),
+      catchError((error) => {
+        throw error;
+      }),
+    );
+  }
+
   getStatus(id: string) {
     throw new Error('Method not implemented.');
   }
-  cashin(createOperationDto: CreateOperationDto) {
-    throw new Error('Method not implemented.');
-  }
-  cashout(createOperationDto: CreateOperationDto) {
-    throw new Error('Method not implemented.');
-  }
-  create(createOperationDto: CreateOperationDto) {
-    return 'This action adds a new operation';
-  }
 
-  // loadProvider(transaction: Transaction) {
-  //   if (transaction.providerCode)
-  //     return this.paymentProviderService.findByCode(transaction.providerCode);
-  // }
-
-  findOne(id: number) {
-    return `This action returns a #${id} operation`;
-  }
-
-  update(id: number, updateOperationDto: UpdateOperationDto) {
-    return `This action updates a #${id} operation`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} operation`;
+  loadProvider(request: OperationRequest): Observable<PaymentProvider> {
+    if (request.providerCode)
+      return this.paymentProviderService.findByCode(request.providerCode);
+    return from(
+      this.paymentProviderService.findSuitableProvider(
+        request.amount.destinationAmount,
+      ),
+    );
   }
 }

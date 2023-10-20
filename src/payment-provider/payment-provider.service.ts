@@ -1,8 +1,20 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { CreatePaymentProviderRequest } from './dto/create-payment-provider.dto';
 import { UpdatePaymentProviderRequest } from './dto/update-payment-provider.dto';
 import { ConnectionErrorException } from '@app/common';
-import { Observable, catchError, from, map, switchMap } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  firstValueFrom,
+  from,
+  map,
+  switchMap,
+} from 'rxjs';
 import { PaymentProvider, ProviderCode } from '@prisma/client';
 import { PrismaService } from '@app/common/prisma';
 
@@ -117,6 +129,53 @@ export class PaymentProviderService {
         throw error;
       }),
     );
+  }
+
+  async findSuitableProvider(amount: number): Promise<PaymentProvider> {
+    this.logger.log('Finding suitable payment provider ...');
+
+    const pipeline = [
+      {
+        $match: {
+          isActive: true,
+          $expr: {
+            $and: [
+              { $gte: [amount, '$params.minimumThreshold'] },
+              { $lte: [amount, '$params.maximumThreshold'] },
+            ],
+          },
+        },
+      },
+    ];
+    const providers = await this.prisma.paymentProvider.aggregateRaw({
+      pipeline,
+    });
+    if (providers.length === 0) {
+      return await firstValueFrom(
+        this.findByCode(ProviderCode.AUTO_USSD).pipe(
+          catchError(() => {
+            throw new ServiceUnavailableException(
+              'No suitable service is currently available',
+            );
+          }),
+        ),
+      );
+    }
+    const map = new Map(Object.entries(providers[0]));
+    const provider = Object.fromEntries(map);
+    console.log('provider', provider.code);
+    return {
+      id: provider._id.$oid,
+      createdAt: provider.createdAt.$date,
+      updatedAt: provider.updatedAt.$date,
+      label: provider.label,
+      code: provider.code,
+      type: provider.type,
+      applyCountry: provider.applyCountry,
+      logo: provider.logo,
+      isActive: provider.isActive,
+      params: provider.params,
+    };
   }
 
   findAllProviderCode() {

@@ -19,14 +19,7 @@ import { Observable } from 'rxjs';
 import { AccountBalanceProvider } from '../interfaces/i-user-infos-provider copy';
 import { VoidNoParam, Amount } from 'src/intouch/intouch';
 
-export abstract class PaymentOperator
-  implements
-    CashInProvider,
-    CashOutProvider,
-    CheckTransactionStatus,
-    UserInfosProvider,
-    AccountBalanceProvider
-{
+export abstract class PaymentOperator {
   logger?: Logger;
 
   code?: ProviderCode;

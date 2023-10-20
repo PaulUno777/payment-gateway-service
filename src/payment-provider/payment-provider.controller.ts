@@ -12,7 +12,7 @@ import { PaymentProviderService } from './payment-provider.service';
 import { CreatePaymentProviderRequest } from './dto/create-payment-provider.dto';
 import { UpdatePaymentProviderRequest } from './dto/update-payment-provider.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { ProviderCode, RoleType } from '@prisma/client';
+import { RoleType } from '@prisma/client';
 import { HasRole } from '@app/common';
 
 @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
@@ -66,5 +66,13 @@ export class PaymentProviderController {
   @Get('provider/code')
   findAllProviderCode() {
     return this.paymentProviderService.findAllProviderCode();
+  }
+
+  @ApiBearerAuth('jwt-auth')
+  @HttpCode(HttpStatus.OK)
+  @Post('test')
+  test(@Body() body) {
+    console.log('body.amount', body.amount);
+    return this.paymentProviderService.findSuitableProvider(body.amount);
   }
 }

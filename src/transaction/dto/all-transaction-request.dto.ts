@@ -1,10 +1,14 @@
-import { Amount, RecipientDetails, SenderDetails } from '@app/common/types';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { ProviderCode } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsIn, ValidateNested } from 'class-validator';
+import {
+  Amount,
+  RecipientDetails,
+  SenderDetails,
+} from '../../../libs/common/src/types/transaction.type.dto';
 
-export class CreateOperationDto {
+export class AllTransactionRequest {
   @ApiProperty({ description: '' })
   @ValidateNested()
   @Type(() => SenderDetails)
@@ -20,7 +24,13 @@ export class CreateOperationDto {
   @Type(() => Amount)
   amount: Amount;
 
-  @ApiPropertyOptional({ description: '', default: 'AUTOMATIC' })
-  @IsIn(['ORANGE_MONEY', 'MTN_MOBILE_MONEY', 'INTOUCH', 'AUTO_USSD'])
+  @ApiProperty({ description: '', default: 'AUTOMATIC' })
+  @IsIn([
+    'ORANGE_MONEY',
+    'MTN_MOBILE_MONEY',
+    'INTOUCH',
+    'AUTO_USSD',
+    'AUTOMATIC',
+  ])
   PrividerCode?: ProviderCode;
 }

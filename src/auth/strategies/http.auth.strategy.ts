@@ -3,7 +3,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { BasicStrategy } from 'passport-http';
 import { ApiClientService } from 'src/api-client/api-client.service';
 import { Request } from 'express';
-import { RoleType } from '@prisma/client';
+import { RoleType, SourceType } from '@prisma/client';
 
 @Injectable()
 export class HttpAuthStrategy extends PassportStrategy(BasicStrategy, 'basic') {
@@ -32,6 +32,7 @@ export class HttpAuthStrategy extends PassportStrategy(BasicStrategy, 'basic') {
       sub: apiClient.id,
       email: apiClient.apiKey,
       role: RoleType.api_client,
+      type: SourceType.SERVICE,
     };
   }
 }

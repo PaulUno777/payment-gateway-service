@@ -14,11 +14,12 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { MOMO_PACKAGE_NAME } from '@app/common/constants';
 import { PaymentOperator } from '@app/common/abstactions';
 import { ProviderCode } from '@prisma/client';
+import { CashInProvider } from '@app/common/interfaces';
 
 @Injectable()
 export class MomoService
   extends PaymentOperator
-  implements PaymentServiceClient, OnModuleInit
+  implements CashInProvider, OnModuleInit
 {
   private paymentService: PaymentServiceClient;
 

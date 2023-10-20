@@ -12,7 +12,15 @@ export class CmPhoneHelper implements IPhoneHelper {
 
   formatPhoneNumber(phoneNumber: string): string {
     const number = parsePhoneNumberFromString(phoneNumber, this.applyCountry);
-    return number ? number.formatInternational().replace(/[\s+]/g, '') : '';
+    const formatedNumber = number
+      ? number.formatInternational().replace(/[\s+]/g, '')
+      : null;
+    if (formatedNumber == null)
+      throw new BadRequestException(
+        'The provided phoneNumber is not valid for this country',
+      );
+
+    return formatedNumber;
   }
 
   getProviderCodeByMsisdn(phoneNumber: string): OperatorCode {

@@ -57,6 +57,7 @@ export interface ProviderResponse {
   amount?: string;
   externalId?: string;
   message?: string;
+  fees?: number;
   customer?: Payer | undefined;
   owner?: Payer | undefined;
   payToken?: string;

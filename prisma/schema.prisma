@@ -131,10 +131,10 @@ model Transaction {
 }
 
 type ExecutionReport {
-  startLog       String? @default("")
-  startSignature String? @default("")
-  endLog         String?
-  endSignature   String?
+  startLog   Json?
+  startTrace String?
+  endLog     Json?
+  endTrace   String?
 }
 
 type Source {
@@ -145,12 +145,12 @@ type Source {
 
 type SenderDetails {
   id      String
-  name    String
-  country String
+  name    String?
+  country String?
 }
 
 type RecipientDetails {
-  id      String?
+  id      String
   name    String?
   country String  @default("CM")
 }

@@ -1,36 +1,27 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ProviderCode } from '@prisma/client';
-import { Type } from 'class-transformer';
-import { IsIn, ValidateNested } from 'class-validator';
 import {
   Amount,
   RecipientDetails,
   SenderDetails,
-} from '../../../libs/common/src/types/transaction.type.dto';
+  Source,
+} from '@app/common/types';
+import { Mouvement, OperatorCode, ProviderCode } from '@prisma/client';
 
-export class AllTransactionRequest {
-  @ApiProperty({ description: '' })
-  @ValidateNested()
-  @Type(() => SenderDetails)
+export class TransactionRequest {
+  source: Source;
+
   senderDetails: SenderDetails;
 
-  @ApiProperty({ description: '' })
-  @ValidateNested()
-  @Type(() => RecipientDetails)
   recipientDetails: RecipientDetails;
 
-  @ApiProperty({ description: '' })
-  @ValidateNested()
-  @Type(() => Amount)
   amount: Amount;
 
-  @ApiProperty({ description: '', default: 'AUTOMATIC' })
-  @IsIn([
-    'ORANGE_MONEY',
-    'MTN_MOBILE_MONEY',
-    'INTOUCH',
-    'AUTO_USSD',
-    'AUTOMATIC',
-  ])
-  PrividerCode?: ProviderCode;
+  operatorCode: OperatorCode;
+
+  callbackUrl?: string;
+
+  description: string;
+
+  mouvement: Mouvement;
+
+  providerCode: ProviderCode;
 }

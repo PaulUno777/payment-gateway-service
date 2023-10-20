@@ -4,11 +4,9 @@ import { ExecutionReport } from '../../../libs/common/src/types/transaction.type
 export class UpdateTransactionRequest {
   fees?: number;
 
-  callbackUrl?: string;
-
   payToken?: string;
 
   state?: State;
 
-  report?: ExecutionReport;
+  report: ExecutionReport;
 }
