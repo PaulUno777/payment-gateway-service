@@ -1,13 +1,13 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import {
-  Amount,
   FinanceRequest,
   FinanceResponse,
   PAYMENT_SERVICE_NAME,
-  PaymentClient,
+  PaymentServiceClient,
   StatusRequest,
   StatusResponse,
-  VoidNoParam,
+  Empty,
+  AccountBalanceResponse,
 } from './intouch';
 import { Observable } from 'rxjs';
 import { ClientGrpc } from '@nestjs/microservices';
@@ -16,20 +16,23 @@ import { PaymentOperator } from '@app/common/abstactions';
 import { ProviderCode } from '@prisma/client';
 
 @Injectable()
-export class IntouchService extends PaymentOperator implements OnModuleInit {
-  private paymentService: PaymentClient;
+export class IntouchService
+  extends PaymentOperator
+  implements OnModuleInit, PaymentServiceClient
+{
+  private paymentService: PaymentServiceClient;
 
   constructor(@Inject(INTOUCH_PACKAGE_NAME) private client: ClientGrpc) {
     super();
-    this.code = ProviderCode.INTOUCH;
+    this.code = [ProviderCode.CM_INTOUCH];
   }
 
   onModuleInit() {
     this.paymentService =
-      this.client.getService<PaymentClient>(PAYMENT_SERVICE_NAME);
+      this.client.getService<PaymentServiceClient>(PAYMENT_SERVICE_NAME);
   }
 
-  getAccountBalance(request: VoidNoParam): Observable<Amount> {
+  getAccountBalance(request: Empty): Observable<AccountBalanceResponse> {
     return this.paymentService.getAccountBalance(request);
   }
 

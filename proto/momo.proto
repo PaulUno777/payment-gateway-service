@@ -9,6 +9,32 @@ service PaymentService {
     rpc CheckUserInfos(UserInfosRequest) returns (UserInfosResponse){}
 }
 
+service ProviderService {
+    rpc GetProviderInfo(Empty) returns (ProviderInfoResponse){}
+}
+
+message Empty {}
+
+
+message ProviderInfoResponse {
+    repeated ProviderInfo providers = 1;
+}
+
+message ProviderInfo {
+    string operatorName = 1;
+    string operatorType = 2;
+    string operatorCode = 3;
+    repeated string applyCountry = 4;
+    ProviderParams params =5;
+}
+
+message ProviderParams {
+    bool isDepositAvailable = 1;
+    bool isWithdrawalAvailable = 2;
+    bool isBalanceInfoAvailable = 3;
+    bool isCustomerInfoAvailable = 4;
+}
+
 message UserInfosRequest {
     string phoneNumber = 1;
     string providerCode = 2;
@@ -16,27 +42,43 @@ message UserInfosRequest {
 
 message UserInfosResponse {
     bool success = 1;
-    string message = 2;
+    string trace = 2;
     ProviderResponse providerResponse = 3;
+    UserData data = 4;
 }
 
 
 message UserData{
-    string firstname = 1;
-    string lastname = 2;
+    string firstName = 1;
+    string lastName = 2;
 }
 
 message StatusRequest {
     string id = 1;
     string payToken = 2;
-    string Mouvement = 3;
+    string mouvement = 3;
     string providerCode = 4;
 }
 
 message StatusResponse {
     bool success = 1;
-    string message = 2;
+    string trace = 2;
     ProviderResponse providerResponse = 3;
+    StatusData data = 4;
+}
+
+message StatusData{
+    string status = 1;
+    string payToken = 2;
+    Payer payer = 3;
+    Payer payee = 4;
+    Payer owner = 5;
+    string currency = 6;
+    string financialTransactionId = 7;
+    string externalId = 8;
+    string errorMessage = 9;
+    double amount = 10;
+    double fees =11;
 }
 
 message FinanceRequest{
@@ -44,29 +86,28 @@ message FinanceRequest{
     double amount = 2;
     string payerPhone = 3;
     string description = 4;
-    string externalId = 5;
+    string providerCode = 5;
     string payToken = 6;
-    string providerCode = 7;
-    string apiClient = 8;
 }
 
 message FinanceResponse {
     bool success = 1;
-    string message = 2;
+    string trace = 2;
     ProviderResponse providerResponse = 3;
+    FinanceData data = 4;
+}
+
+message FinanceData{
+    string payToken = 1;
+    Payer payer = 2;
+    Payer payee = 3;
 }
 
 message ProviderResponse {
     int32 code = 1;
     string status = 2;
-    string financialTransactionId = 3;
-    string amount = 4;
-    string externalId = 5;
-    string message = 6;
-    Payer customer = 7;
-    Payer owner = 8;
-    string payToken = 9;
-    UserData userData = 10;
+    string message = 3;
+    string date = 4;
 }
 
 message Payer{

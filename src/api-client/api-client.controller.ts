@@ -4,7 +4,7 @@ import { CreateApiClientReq } from './dto/create-api-client.dto';
 import { UpdateApiClientReq } from './dto/update-api-client.dto';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { HasRole } from '@app/common';
-import { RoleType } from '@prisma/client';
+import { RoleType } from '@app/common/prisma/client-auth';
 
 @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
 @ApiTags('Api Client')

@@ -1,10 +1,4 @@
-import {
-  IsBoolean,
-  IsISO31661Alpha2,
-  IsIn,
-  IsOptional,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsIn, IsOptional, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ProviderCode, ProviderType } from '@prisma/client';
 import { Type } from 'class-transformer';
@@ -15,25 +9,21 @@ export class CreatePaymentProviderRequest {
   @ApiProperty()
   label: string;
 
-  @IsIn(['MTN_MOBILE_MONEY', 'ORANGE_MONEY', 'INTOUCH', 'AUTO_USSD'])
+  @IsIn(Object.values(ProviderCode))
   @ApiProperty({ default: 'SAMPLE_CODE' })
   code: ProviderCode;
 
-  @IsIn(['MOBILE_MONEY', 'BANKING', 'CASH'])
+  @IsIn(Object.values(ProviderType))
   @ApiProperty({ default: 'MOBILE_MONEY' })
   type: ProviderType;
 
-  @IsISO31661Alpha2()
-  @ApiProperty({ default: 'CM' })
-  applyCountry: string;
+  @IsArray()
+  @ApiProperty({ default: ['CMR'] })
+  applyCountry: string[];
 
   @IsOptional()
   @ApiProperty()
   logo: string;
-
-  @IsBoolean()
-  @ApiProperty()
-  isActive: boolean;
 
   @ValidateNested()
   @Type(() => ProviderParams)

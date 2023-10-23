@@ -1,8 +1,8 @@
 /* eslint-disable prettier/prettier */
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from '@prisma/client';
 import { Observable } from 'rxjs';
+import { Role } from '../prisma/client-auth';
 
 @Injectable()
 export class HasRoleGuard implements CanActivate {

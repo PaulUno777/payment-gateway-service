@@ -16,17 +16,16 @@ import {
   UserInfosResponse,
 } from 'src/momo/momo';
 import { Observable } from 'rxjs';
-import { AccountBalanceProvider } from '../interfaces/i-user-infos-provider copy';
-import { VoidNoParam, Amount } from 'src/intouch/intouch';
+import { Empty, Amount, AccountBalanceResponse } from 'src/intouch/intouch';
 
 export abstract class PaymentOperator {
   logger?: Logger;
 
-  code?: ProviderCode;
+  code?: ProviderCode[] | string[];
 
   getAccountBalance(
-    request: VoidNoParam,
-  ): Promise<Amount> | Observable<Amount> {
+    request: Empty,
+  ): Observable<AccountBalanceResponse> | Observable<Amount> {
     throw new Error('Method not implemented.');
   }
 
@@ -35,16 +34,19 @@ export abstract class PaymentOperator {
   ): Promise<UserInfosResponse> | Observable<UserInfosResponse> {
     throw new Error('Method not implemented.');
   }
+
   checkTransactionStatus(
     StatusRequest: StatusRequest,
   ): Promise<StatusResponse> | Observable<StatusResponse> {
     throw new Error('Method not implemented.');
   }
+
   cashOut(
     financeRequest: FinanceRequest,
   ): Promise<FinanceResponse> | Observable<FinanceResponse> {
     throw new Error('Method not implemented.');
   }
+
   cashIn(
     financeRequest: FinanceRequest,
   ): Promise<FinanceResponse> | Observable<FinanceResponse> {

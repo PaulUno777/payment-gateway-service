@@ -11,15 +11,19 @@ import { TransactionModule } from './transaction/transaction.module';
 import { AuthTokenGard, HasRoleGuard, LoggerMiddleware } from '@app/common';
 import { UserModule } from './user/user.module';
 import { OperationModule } from './operation/operation.module';
+import { CurrencyModule } from './currency/currency.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     UserModule,
     ApiClientModule,
     PaymentProviderModule,
+    CurrencyModule,
     OperationModule,
     TransactionModule,
     IntouchModule,

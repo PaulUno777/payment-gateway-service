@@ -11,7 +11,6 @@ import { AuthService } from './auth.service';
 import { CurrentUser, IsPublic, RefreshTokenGard } from '@app/common';
 import {
   ApiBearerAuth,
-  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -24,20 +23,6 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  // @IsPublic()
-  // @Post('local/signup')
-  // @HttpCode(HttpStatus.CREATED)
-  // @ApiCreatedResponse({
-  //   description: 'Returns authentification tokens',
-  //   type: AuthUserRes,
-  // })
-  // @ApiOperation({
-  //   summary: 'Register in with email and password (for test purpose only)',
-  // })
-  // signup(@Body() userDto: AuthUserReq): Promise<AuthUserRes> {
-  //   return this.authService.signup(userDto);
-  // }
 
   @IsPublic()
   @Post('local/signin')

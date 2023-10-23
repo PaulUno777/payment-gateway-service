@@ -13,8 +13,9 @@ import { Observable } from 'rxjs';
 import { ClientGrpc } from '@nestjs/microservices';
 import { MOMO_PACKAGE_NAME } from '@app/common/constants';
 import { PaymentOperator } from '@app/common/abstactions';
-import { ProviderCode } from '@prisma/client';
 import { CashInProvider } from '@app/common/interfaces';
+import { InfoMomoService } from './info-momo.service';
+import { ProviderCode } from '@prisma/client';
 
 @Injectable()
 export class MomoService
@@ -23,9 +24,15 @@ export class MomoService
 {
   private paymentService: PaymentServiceClient;
 
-  constructor(@Inject(MOMO_PACKAGE_NAME) private client: ClientGrpc) {
+  constructor(
+    @Inject(MOMO_PACKAGE_NAME) private client: ClientGrpc,
+    private infoMomoService: InfoMomoService,
+  ) {
     super();
-    this.code = ProviderCode.MOBILE_MONEY_API;
+    this.code = [
+      ProviderCode.CM_MTN_MOBILE_MONEY,
+      ProviderCode.CM_ORANGE_MONEY,
+    ];
   }
 
   onModuleInit() {

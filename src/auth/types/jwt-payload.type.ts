@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Role, SourceType } from '@prisma/client';
+import { Role } from '@app/common/prisma/client-auth';
+import { SourceType } from '@prisma/client';
 
 export type JwtPayload = {
   sub: string;

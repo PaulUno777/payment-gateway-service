@@ -1,6 +1,6 @@
 import { TransactionEntity } from '@app/common/types';
 import { ApiProperty } from '@nestjs/swagger';
-import { OperatorCode } from '@prisma/client';
+import { ProviderCode } from '@prisma/client';
 
 export class OperationResponse {
   @ApiProperty({ description: '' })
@@ -16,7 +16,7 @@ export class UserInfo {
   @ApiProperty({ description: '', default: 'fullname' })
   fullName: string;
   @ApiProperty({ description: '', default: 'TOTO_MONEY' })
-  operator: OperatorCode;
+  provider: ProviderCode;
   @ApiProperty({ description: '', default: '252538768' })
   msisdn: string;
 }

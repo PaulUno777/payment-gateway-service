@@ -23,7 +23,7 @@ export class OperatorGatewayLoader {
     this.logger.log('= = => Loading payment operator <= = =');
     console.log('providerCode', providerCode);
     for (const provider of this.paymentOperators) {
-      if (provider.code === providerCode) {
+      if (provider.code.includes(providerCode)) {
         return provider;
       }
     }

@@ -1,49 +1,30 @@
-import {
-  ConflictException,
-  Injectable,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConnectionErrorException, hashData, verifyHash } from '@app/common';
-import { RoleType, SourceType, User } from '@prisma/client';
 import { AuthUserRes } from './dto/auth-user.res';
 import { AuthUserReq } from './dto/auth-user.req';
 import { GetTokenRes } from 'src/api-client/dto/get-token.dto copy';
+import { AuthPrismaService } from '@app/common/prisma/auth.prisma.service';
 import { PrismaService } from '@app/common/prisma';
+import { SourceType } from '@prisma/client';
+import { RoleType } from '@app/common/prisma/client-auth';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
+    private readonly authPrisma: AuthPrismaService,
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
   ) {}
 
-  async signup(body: AuthUserReq): Promise<AuthUserRes> {
-    try {
-      //create user
-      const user = await this.create(body);
-      //get tokens (login)
-      const tokens = await this.getTokens(user.id, user.email, user.role);
-      await this.updateRefreshToken(user.id, tokens.refreshToken);
-      return tokens;
-    } catch (error) {
-      if (error.status === 409) {
-        // Handle unique constraint violation
-        throw new ConflictException('User with this email already exists');
-      } else {
-        console.log('error', error);
-        throw new ConnectionErrorException(
-          `Something went wrong with data source \n ${error}`,
-        );
-      }
-    }
-  }
-
   async signin(body: AuthUserReq): Promise<AuthUserRes> {
-    const user = await this.prisma.user.findUnique({
-      where: { email: body.email, isActive: true, isDeleted: false },
+    const user = await this.authPrisma.user.findFirstOrThrow({
+      where: {
+        OR: [{ email: body.login }, { username: body.login }],
+        isActive: true,
+        isDeleted: false,
+      },
     });
 
     if (!user) throw new UnauthorizedException('Access denied');
@@ -59,7 +40,7 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-    await this.prisma.user.updateMany({
+    await this.prisma.refreshTokenStore.updateMany({
       where: {
         id: userId,
         refreshToken: {
@@ -71,13 +52,16 @@ export class AuthService {
   }
 
   async refreshTokens(userId: string, refreshToken: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId, refreshToken: { not: null }, isActive: true },
+    const token = await this.prisma.refreshTokenStore.findUnique({
+      where: { id: userId, refreshToken: { not: null } },
     });
-    if (!user || !user.refreshToken)
+    const user = await this.authPrisma.user.findUnique({
+      where: { id: userId, isActive: true, isDeleted: false },
+    });
+    if (!token || !token.refreshToken || !user)
       throw new UnauthorizedException('Access Denied');
 
-    const rtMatch = await verifyHash(user.refreshToken, refreshToken);
+    const rtMatch = await verifyHash(token.refreshToken, refreshToken);
     if (!rtMatch) throw new UnauthorizedException('Access Denied');
 
     //get tokens (login)
@@ -89,11 +73,15 @@ export class AuthService {
   async updateRefreshToken(userId: string, refreshToken: string) {
     const tokenHash = await hashData(refreshToken);
     try {
-      await this.prisma.user.update({
+      await this.prisma.refreshTokenStore.upsert({
         where: {
           id: userId,
         },
-        data: {
+        update: {
+          refreshToken: tokenHash,
+        },
+        create: {
+          id: userId,
           refreshToken: tokenHash,
         },
       });
@@ -160,30 +148,5 @@ export class AuthService {
       tokenType: 'Bearer',
       expiresIn: 3600,
     };
-  }
-
-  async create(authUserDto: AuthUserReq): Promise<User> {
-    const hashedPassword = await hashData(authUserDto.password);
-    try {
-      return await this.prisma.user.create({
-        data: {
-          email: authUserDto.email,
-          username: authUserDto.email,
-          password: hashedPassword,
-          role: RoleType.new_role,
-        },
-      });
-      //get tokens (login)
-    } catch (error) {
-      if (error.code === 'P2002') {
-        // Handle unique constraint violation
-        throw new ConflictException('User with this email already exists');
-      } else {
-        // Handle other errors
-        throw new ConnectionErrorException(
-          `Something went wrong with data source \n ${error}`,
-        );
-      }
-    }
   }
 }

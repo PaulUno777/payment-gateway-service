@@ -14,6 +14,10 @@ export class ProviderParams {
   @ApiProperty()
   isCustomerInfoAvailable: boolean;
 
+  @IsBoolean()
+  @ApiProperty()
+  isBalanceInfoAvailable;
+
   @Min(1)
   @ApiProperty()
   minimumThreshold: number;

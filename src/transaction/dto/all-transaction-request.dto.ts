@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProviderCode } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsIn, ValidateNested } from 'class-validator';
+import { IsIn, ValidateNested, IsOptional } from 'class-validator';
 import {
   Amount,
   RecipientDetails,
@@ -24,13 +24,8 @@ export class AllTransactionRequest {
   @Type(() => Amount)
   amount: Amount;
 
-  @ApiProperty({ description: '', default: 'AUTOMATIC' })
-  @IsIn([
-    'ORANGE_MONEY',
-    'MTN_MOBILE_MONEY',
-    'INTOUCH',
-    'AUTO_USSD',
-    'AUTOMATIC',
-  ])
+  @ApiProperty({ description: '', default: 'Optional' })
+  @IsIn(Object.values(ProviderCode))
+  @IsOptional()
   PrividerCode?: ProviderCode;
 }

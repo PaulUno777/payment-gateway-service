@@ -5,6 +5,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MOMO_PACKAGE_PACKAGE_NAME } from './momo';
 import { join } from 'path';
 import { MOMO_PACKAGE_NAME } from '@app/common/constants';
+import { InfoMomoService } from './info-momo.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { MOMO_PACKAGE_NAME } from '@app/common/constants';
     ]),
   ],
   controllers: [MomoController],
-  providers: [MomoService],
-  exports: [MomoService],
+  providers: [MomoService, InfoMomoService],
+  exports: [MomoService, InfoMomoService],
 })
 export class MomoModule {}

@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { TransactionRequest } from './dto/transaction-request.dto';
 import { UpdateTransactionRequest } from './dto/update-transaction.dto';
 import { PhoneHelperService } from '@app/phone-helper';
 import { catchError, from } from 'rxjs';
 import { PrismaService } from '@app/common/prisma';
 import { ConnectionErrorException } from '@app/common';
 import { AllTransactionRequest } from './dto/all-transaction-request.dto';
+import { CreateTransactionRequest } from './dto/create-transaction-request.dto';
 
 @Injectable()
 export class TransactionService {
@@ -24,7 +24,7 @@ export class TransactionService {
     return formatedNumber;
   }
 
-  create(request: TransactionRequest) {
+  create(request: CreateTransactionRequest) {
     return from(this.prisma.transaction.create({ data: request })).pipe(
       catchError((error) => {
         console.error(error);

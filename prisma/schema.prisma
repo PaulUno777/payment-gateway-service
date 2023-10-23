@@ -10,43 +10,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  uid          String   @default(uuid())
-  email        String   @unique
-  username     String?
-  password     String
-  firstName    String?  @map("firstname")
-  lastName     String?  @map("lastname")
-  phone        String?
-  isActive     Boolean  @default(true) @map("active")
-  isDeleted    Boolean  @default(false) @map("account_deleted")
-  role         RoleType
+model RefreshTokenStore {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   refreshToken String?
 
-  @@map("administrators")
-}
-
-enum RoleType {
-  super_admin
-  client_manager
-  manage_users
-  all
-  new_role
-  api_client
-}
-
-model Role {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt DateTime @default(now()) @map("created_at")
-
-  name      String  @unique
-  isDeleted Boolean @default(false) @map("deleted")
-
-  @@map("roles")
+  @@map("refresh_token_store")
 }
 
 model ApiClient {
@@ -61,7 +31,7 @@ model ApiClient {
   description String?
   webhookUrl  String?
 
-  @@map("api-clients")
+  @@map("api_clients")
 }
 
 model PaymentProvider {
@@ -72,11 +42,10 @@ model PaymentProvider {
   label        String?
   code         ProviderCode   @unique
   type         ProviderType
-  applyCountry String?
+  applyCountry String[]
   logo         String?
   isActive     Boolean        @default(true)
   params       ProviderParams
-  Transaction  Transaction[]
 
   @@map("payment_providers")
 }
@@ -85,6 +54,7 @@ type ProviderParams {
   isDepositAvailable      Boolean @default(false)
   isWithdrawalAvailable   Boolean @default(false)
   isCustomerInfoAvailable Boolean @default(false)
+  isBalanceInfoAvailable  Boolean @default(false)
   minimumThreshold        Float
   maximumThreshold        Float
 }
@@ -95,15 +65,11 @@ enum ProviderType {
   CASH
 }
 
-enum OperatorCode {
-  ORANGE_MONEY
-  MTN_MOBILE_MONEY
-}
-
 enum ProviderCode {
-  MOBILE_MONEY_API
-  INTOUCH
-  AUTO_USSD
+  CM_MTN_MOBILE_MONEY
+  CM_ORANGE_MONEY
+  CM_INTOUCH
+  CM_AUTO_USSD
 }
 
 model Transaction {
@@ -115,26 +81,33 @@ model Transaction {
   senderDetails    SenderDetails
   recipientDetails RecipientDetails
   amount           Amount
-  operatorCode     OperatorCode
-  fees             Float            @default(0)
+  fees             Float?            @default(0)
   description      String?
   callbackUrl      String?
   payToken         String?
-  state            State            @default(PENDING)
+  state            State             @default(CREATED)
   mouvement        Mouvement
-  report           ExecutionReport?
+  executionReports ExecutionReport[] @relation(fields: [], references: [])
 
-  provider     PaymentProvider? @relation(fields: [providerCode], references: [code])
-  providerCode ProviderCode
+  providerCode ProviderCode?
 
   @@map("transactions")
 }
 
-type ExecutionReport {
+model ExecutionReport {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime  @default(now())
+  CompletedAt DateTime? @updatedAt
+
   startLog   Json?
   startTrace String?
   endLog     Json?
   endTrace   String?
+
+  Transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId String?      @db.ObjectId
+
+  @@map("execution_reports")
 }
 
 type Source {
@@ -152,7 +125,7 @@ type SenderDetails {
 type RecipientDetails {
   id      String
   name    String?
-  country String  @default("CM")
+  country String  @default("CMR")
 }
 
 type Amount {
@@ -169,6 +142,7 @@ enum SourceType {
 }
 
 enum State {
+  CREATED
   PENDING
   SUCCESS
   FAILED

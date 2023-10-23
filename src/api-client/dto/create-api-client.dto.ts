@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, MinLength } from 'class-validator';
+import { IsOptional, IsUrl, MinLength } from 'class-validator';
 
 export class CreateApiClientReq {
   @MinLength(8)
@@ -10,5 +10,6 @@ export class CreateApiClientReq {
   description?: string;
   @ApiProperty()
   @IsOptional()
+  @IsUrl()
   webhookUrl?: string;
 }

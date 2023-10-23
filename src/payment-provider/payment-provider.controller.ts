@@ -12,8 +12,8 @@ import { PaymentProviderService } from './payment-provider.service';
 import { CreatePaymentProviderRequest } from './dto/create-payment-provider.dto';
 import { UpdatePaymentProviderRequest } from './dto/update-payment-provider.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { RoleType } from '@prisma/client';
 import { HasRole } from '@app/common';
+import { RoleType } from '@app/common/prisma/client-auth';
 
 @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
 @ApiTags('Payment Provider')

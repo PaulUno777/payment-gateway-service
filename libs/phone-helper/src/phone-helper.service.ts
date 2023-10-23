@@ -1,6 +1,6 @@
 import { IPhoneHelper } from '@app/common/interfaces';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { CmPhoneHelper } from './cm-phone-helper';
+import { CmPhoneHelper } from './implementations/cm-phone-helper';
 
 @Injectable()
 export class PhoneHelperService {

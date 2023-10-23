@@ -6,13 +6,14 @@ import {
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { Observable, catchError, from, map, switchMap } from 'rxjs';
-import { ApiClient, RoleType } from '@prisma/client';
+import { ApiClient } from '@prisma/client';
 import { ConnectionErrorException } from '@app/common';
 import { CreateApiClientReq } from './dto/create-api-client.dto';
 import { UpdateApiClientReq } from './dto/update-api-client.dto';
 import { GetTokenRes } from './dto/get-token.dto copy';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@app/common/prisma';
+import { RoleType } from '@app/common/prisma/client-auth';
 
 @Injectable()
 export class ApiClientService {

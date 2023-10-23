@@ -152,7 +152,7 @@ export class PaymentProviderService {
     });
     if (providers.length === 0) {
       return await firstValueFrom(
-        this.findByCode(ProviderCode.AUTO_USSD).pipe(
+        this.findByCode(ProviderCode.CM_AUTO_USSD).pipe(
           catchError(() => {
             throw new ServiceUnavailableException(
               'No suitable service is currently available',

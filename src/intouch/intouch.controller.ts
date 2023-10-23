@@ -1,27 +1,29 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { IntouchService } from './intouch.service';
 import {
-  Amount,
+  AccountBalanceResponse,
   FinanceRequest,
   FinanceResponse,
-  PaymentController,
+  PaymentServiceController,
   StatusRequest,
   StatusResponse,
 } from './intouch';
 import { Observable } from 'rxjs';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { HasRole } from '@app/common';
-import { RoleType } from '@prisma/client';
+import { RoleType } from '@app/common/prisma/client-auth';
 
 @ApiTags('Intouch')
 @Controller('intouch')
-export class IntouchController implements PaymentController {
+export class IntouchController implements PaymentServiceController {
   constructor(private readonly intouchService: IntouchService) {}
 
   @ApiBearerAuth('jwt-auth')
   @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
   @Get('account/balance')
-  getAccountBalance(): Observable<Amount> | Promise<Amount> {
+  getAccountBalance():
+    | Observable<AccountBalanceResponse>
+    | Promise<AccountBalanceResponse> {
     return this.intouchService.getAccountBalance({});
   }
 

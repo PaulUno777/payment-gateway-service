@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ProviderType } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsISO31661Alpha2,
   IsIn,
@@ -16,14 +17,14 @@ export class UpdatePaymentProviderRequest {
   label?: string;
 
   @IsOptional()
-  @IsIn(['MOBILE_MONEY', 'BANKING', 'CASH'])
+  @IsIn(Object.values(ProviderType))
   @ApiProperty({ default: 'MOBILE_MONEY' })
   type?: ProviderType;
 
   @IsOptional()
-  @IsISO31661Alpha2()
-  @ApiProperty({ default: 'CM' })
-  applyCountry?: string;
+  @IsArray()
+  @ApiProperty({ default: ['CMR'] })
+  applyCountry?: string[];
 
   @IsOptional()
   @ApiProperty()

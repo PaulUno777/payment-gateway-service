@@ -11,7 +11,7 @@ export class StatusRequest {
 
   @ApiProperty()
   @IsString()
-  Mouvement: string;
+  mouvement: string;
 
   @ApiProperty()
   @IsIn(['MTN_MOBILE_MONEY', 'ORANGE_MONEY', 'INTOUCH'])

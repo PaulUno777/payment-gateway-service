@@ -9,7 +9,6 @@ import {
 import { OperationService } from './operation.service';
 import { OperationRequest } from './dto/operation-request';
 import { CurrentUser, HasRole } from '@app/common';
-import { RoleType } from '@prisma/client';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -19,7 +18,9 @@ import {
 } from '@nestjs/swagger';
 import { OperationResponse, UserInfo } from './dto/operation-response.dto';
 import { Observable } from 'rxjs';
+import { RoleType } from '@app/common/prisma/client-auth';
 
+@ApiBearerAuth('jwt-auth')
 @HasRole(
   RoleType.super_admin,
   RoleType.manage_users,
@@ -31,48 +32,44 @@ import { Observable } from 'rxjs';
 export class OperationController {
   constructor(private readonly operationService: OperationService) {}
 
-  @ApiBearerAuth('jwt-auth')
-  @ApiCreatedResponse({
-    description: 'Returns authentification tokens',
-    type: OperationResponse,
-  })
-  @ApiOperation({ summary: 'make a payment' })
-  @Post('cash-in')
-  cashin(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
-    return this.operationService.cashin(source, operationRequest);
-  }
+  // @ApiCreatedResponse({
+  //   description: 'Returns authentification tokens',
+  //   type: OperationResponse,
+  // })
+  // @ApiOperation({ summary: 'make a payment' })
+  // @Post('cash-in')
+  // cashin(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
+  //   return this.operationService.cashin(source, operationRequest);
+  // }
 
-  @ApiBearerAuth('jwt-auth')
-  @ApiCreatedResponse({
-    description: 'Returns Transaction',
-    type: OperationResponse,
-  })
-  @ApiOperation({ summary: 'Make a disbursement' })
-  @Post('cash-out')
-  cashout(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
-    return this.operationService.cashout(source, operationRequest);
-  }
+  // @ApiCreatedResponse({
+  //   description: 'Returns Transaction',
+  //   type: OperationResponse,
+  // })
+  // @ApiOperation({ summary: 'Make a disbursement' })
+  // @Post('cash-out')
+  // cashout(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
+  //   return this.operationService.cashout(source, operationRequest);
+  // }
 
-  @ApiBearerAuth('jwt-auth')
-  @ApiOkResponse({
-    description: 'Returns Transaction',
-    type: OperationResponse,
-  })
-  @ApiOperation({ summary: 'Get transaction status' })
-  @Get('payment-status/:id')
-  getStatus(@Param('id') id: string) {
-    return this.operationService.getStatus(id);
-  }
+  // @ApiOkResponse({
+  //   description: 'Returns Transaction',
+  //   type: OperationResponse,
+  // })
+  // @ApiOperation({ summary: 'Get transaction status' })
+  // @Get('payment-status/:id')
+  // getStatus(@Param('id') id: string) {
+  //   return this.operationService.getStatus(id);
+  // }
 
-  @ApiBearerAuth('jwt-auth')
   @ApiOkResponse({
     description: 'Returns user informations',
     type: UserInfo,
   })
   @ApiOperation({ summary: "Retrieve the subscriber's name from their Msisdn" })
-  @Get('subscriber-info/:countryAlpha2/:msisdn')
+  @Get('subscriber-info/:countryIsoAlpha2/:msisdn')
   getSubscriberInfos(
-    @Param('countryAlpha2') country: string,
+    @Param('countryIsoAlpha2') country: string,
     @Param('msisdn') msisdn: string,
   ): Observable<UserInfo> {
     if (country.length != 2 || /\D/.test(msisdn))

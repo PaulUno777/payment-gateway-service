@@ -2,43 +2,59 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Mouvement, ProviderCode, SourceType } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
-  IsISO31661Alpha2,
+  IsISO31661Alpha3,
+  IsIn,
   IsNumber,
   IsNumberString,
   IsOptional,
+  IsString,
   Min,
   ValidateNested,
 } from 'class-validator';
-import { IsCurrencyCode } from '../decorators';
+import {
+  DESTINATION_CURRENCIES_AVAILABLE,
+  ORIGINAL_CURRENCIES_AVAILABLE,
+} from '../constants';
 
 export class ExecutionReport {
   @ApiProperty({ description: '' })
   startLog?: any;
+
   @ApiProperty({ description: '' })
   startSignature?: string;
+
   @ApiProperty({ description: '' })
   endLog?: any;
+
   @ApiProperty({ description: '' })
   endSignature?: string;
 }
 
 export class Source {
   @ApiProperty({ description: '' })
+  @IsString()
   name: string;
+
   @ApiProperty({ description: '' })
+  @IsString()
   entityId: string;
+
   @ApiProperty({ description: '', default: 'SERVICE' })
+  @IsIn(Object.values(SourceType))
   type: SourceType;
 }
 
 export class SenderDetails {
   @ApiProperty({ description: '' })
+  @IsString()
   id: string;
+
   @ApiProperty({ description: '' })
   @IsOptional()
   name: string;
-  @ApiProperty({ description: '', default: 'CM' })
-  @IsISO31661Alpha2()
+
+  @ApiProperty({ description: '', default: 'CMR' })
+  @IsISO31661Alpha3()
   country: string;
 }
 
@@ -46,17 +62,19 @@ export class RecipientDetails {
   @ApiProperty({ description: '' })
   @IsNumberString()
   id: string;
+
   @ApiPropertyOptional({ description: '', default: 'Optional' })
   @IsOptional()
   name?: string;
-  @ApiProperty({ description: '', default: 'CM' })
-  @IsISO31661Alpha2()
+
+  @ApiProperty({ description: '', default: 'CMR' })
+  @IsISO31661Alpha3()
   country: string;
 }
 
 export class Amount {
   @ApiProperty({ description: 'Original currency' })
-  @IsCurrencyCode()
+  @IsIn(ORIGINAL_CURRENCIES_AVAILABLE)
   originalCurrency: string;
 
   @ApiProperty({ description: 'Original amount', default: 1 })
@@ -64,7 +82,7 @@ export class Amount {
   originalAmount: number;
 
   @ApiProperty({ description: 'Destination currency' })
-  @IsCurrencyCode()
+  @IsIn(DESTINATION_CURRENCIES_AVAILABLE)
   destinationCurrency: string;
 
   @ApiProperty({ description: 'Destination amount', default: 1 })
