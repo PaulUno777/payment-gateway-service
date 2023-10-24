@@ -15,7 +15,7 @@ async function bootstrap() {
   //API Documentation.
   const config = new DocumentBuilder()
     .setTitle('KAMIX Payment Service Documentation')
-    .setDescription('All Kamix Payment Services Providers')
+    .setDescription('Payment Service powered by KAMIX')
     .setVersion('0.3')
     .addBearerAuth(
       {
