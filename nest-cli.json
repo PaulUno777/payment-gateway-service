@@ -6,7 +6,7 @@
     "assets": ["../proto/**/*"],
     "watchAssets": true,
     "deleteOutDir": true,
-    "webpack": false
+    "webpack": true
   },
   "projects": {
     "common": {
