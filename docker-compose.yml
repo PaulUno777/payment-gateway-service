@@ -2,7 +2,7 @@ version: "3"
 services:
   server:
     container_name: kmx-payment-gateway
-    image: unoteck/kmx-payment-gateway:v1.0
+    image: unoteck/kmx-payment-gateway
     restart: always
     env_file:
       - .env
