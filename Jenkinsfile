@@ -45,7 +45,7 @@ pipeline {
 
     stage('Deploy App') {
       steps {
-        sh 'docker push unoteck/kmx-payment-gateway:dev'
+        sh 'docker push unoteck/kmx-payment-gateway:v1.0'
       }
     }
 
