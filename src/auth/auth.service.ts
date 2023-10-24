@@ -1,32 +1,46 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConnectionErrorException, hashData, verifyHash } from '@app/common';
 import { AuthUserRes } from './dto/auth-user.res';
 import { AuthUserReq } from './dto/auth-user.req';
 import { GetTokenRes } from 'src/api-client/dto/get-token.dto copy';
-import { AuthPrismaService } from '@app/common/prisma/auth.prisma.service';
-import { PrismaService } from '@app/common/prisma';
 import { SourceType } from '@prisma/client';
-import { RoleType } from '@app/common/prisma/client-auth';
+import { Collection, Db, MongoClient, ObjectId } from 'mongodb';
+import { PrismaService } from '@app/common/prisma';
+import { RoleType } from './types/role-type';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+
+  private db: Db;
+  private client: MongoClient;
+  private userCollection: Collection;
   constructor(
-    private readonly authPrisma: AuthPrismaService,
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) {
+    this.client = new MongoClient(process.env.AUTH_DATABASE_URL);
+    this.db = this.client.db(process.env.AUTH_DB_NAME);
+    this.userCollection = this.db.collection('administrators');
+  }
 
   async signin(body: AuthUserReq): Promise<AuthUserRes> {
-    const user = await this.authPrisma.user.findFirstOrThrow({
-      where: {
-        OR: [{ email: body.login }, { username: body.login }],
-        isActive: true,
-        isDeleted: false,
-      },
+    await this.client.connect();
+    const user = await this.userCollection.findOne({
+      $or: [{ email: body.login }, { username: body.login }],
+      active: true,
+      account_deleted: false,
     });
 
+    this.client.close();
+
+    console.log('user', user);
     if (!user) throw new UnauthorizedException('Access denied');
 
     const pwMatch = await verifyHash(user.password, body.password);
@@ -34,8 +48,12 @@ export class AuthService {
     if (!pwMatch) throw new UnauthorizedException('Access denied');
 
     //get tokens (login)
-    const tokens = await this.getTokens(user.id, user.email, user.role);
-    this.updateRefreshToken(user.id, String(tokens.refreshToken));
+    const tokens = await this.getTokens(
+      String(user._id),
+      user.email,
+      user.role,
+    );
+    this.updateRefreshToken(String(user._id), String(tokens.refreshToken));
     return tokens;
   }
 
@@ -55,9 +73,7 @@ export class AuthService {
     const token = await this.prisma.refreshTokenStore.findUnique({
       where: { id: userId, refreshToken: { not: null } },
     });
-    const user = await this.authPrisma.user.findUnique({
-      where: { id: userId, isActive: true, isDeleted: false },
-    });
+    const user = await this.findOne(userId);
     if (!token || !token.refreshToken || !user)
       throw new UnauthorizedException('Access Denied');
 
@@ -65,8 +81,15 @@ export class AuthService {
     if (!rtMatch) throw new UnauthorizedException('Access Denied');
 
     //get tokens (login)
-    const tokens = await this.getTokens(user.id, user.email, user.role);
-    await this.updateRefreshToken(user.id, String(tokens.refreshToken));
+    const tokens = await this.getTokens(
+      String(user._id),
+      user.email,
+      user.role,
+    );
+    await this.updateRefreshToken(
+      String(user._id),
+      String(tokens.refreshToken),
+    );
     return tokens;
   }
 
@@ -91,6 +114,21 @@ export class AuthService {
         `Something went wrong with data source \n ${error}`,
       );
     }
+  }
+
+  async findOne(id: string): Promise<any> {
+    await this.client.connect();
+    const user = await this.userCollection.findOne({
+      _id: new ObjectId(id),
+      active: true,
+      account_deleted: false,
+    });
+    await this.client.close();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   async getTokens(

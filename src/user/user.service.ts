@@ -1,17 +1,17 @@
 import { ConnectionErrorException } from '@app/common';
-import { AuthPrismaService } from '@app/common/prisma/auth.prisma.service';
-import { User } from '@app/common/prisma/client-auth';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Observable, catchError, from, map } from 'rxjs';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
-  constructor(private readonly prisma: AuthPrismaService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  findOne(id: string): Observable<User> {
-    return from(this.prisma.user.findFirstOrThrow({ where: { id: id } })).pipe(
+  findOne(id: string): Observable<any> {
+    return from(this.authService.findOne(id)).pipe(
       map((user) => {
+        console.log('user', user);
         delete user.password;
         delete user.isDeleted;
         return user;

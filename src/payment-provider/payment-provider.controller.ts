@@ -13,8 +13,9 @@ import { CreatePaymentProviderRequest } from './dto/create-payment-provider.dto'
 import { UpdatePaymentProviderRequest } from './dto/update-payment-provider.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { HasRole } from '@app/common';
-import { RoleType } from '@app/common/prisma/client-auth';
+import { RoleType } from 'src/auth/types/role-type';
 
+@ApiBearerAuth('jwt-auth')
 @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
 @ApiTags('Payment Provider')
 @Controller('payment-provider')
@@ -23,28 +24,24 @@ export class PaymentProviderController {
     private readonly paymentProviderService: PaymentProviderService,
   ) {}
 
-  @ApiBearerAuth('jwt-auth')
   @HttpCode(HttpStatus.OK)
   @Post()
   create(@Body() createRequest: CreatePaymentProviderRequest) {
     return this.paymentProviderService.create(createRequest);
   }
 
-  @ApiBearerAuth('jwt-auth')
   @HttpCode(HttpStatus.OK)
   @Get()
   findAll() {
     return this.paymentProviderService.findAll();
   }
 
-  @ApiBearerAuth('jwt-auth')
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.paymentProviderService.findOne(id);
   }
 
-  @ApiBearerAuth('jwt-auth')
   @HttpCode(HttpStatus.OK)
   @Patch(':id')
   update(
@@ -54,21 +51,18 @@ export class PaymentProviderController {
     return this.paymentProviderService.update(id, updateRequest);
   }
 
-  @ApiBearerAuth('jwt-auth')
   @HttpCode(HttpStatus.OK)
   @Patch(':id/toggle-activation')
   toggleActivation(@Param('id') id: string) {
     return this.paymentProviderService.toggleActivation(id);
   }
 
-  @ApiBearerAuth('jwt-auth')
   @HttpCode(HttpStatus.OK)
   @Get('provider/code')
   findAllProviderCode() {
     return this.paymentProviderService.findAllProviderCode();
   }
 
-  @ApiBearerAuth('jwt-auth')
   @HttpCode(HttpStatus.OK)
   @Post('test')
   test(@Body() body) {

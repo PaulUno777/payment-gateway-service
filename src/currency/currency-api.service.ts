@@ -14,7 +14,7 @@ export class CurrencyapiService {
 
     const url = `${this.baseUrl}${endpoint}?access_key=${key}&${paramString}`;
     console.log('[ Api Call On ] ', url);
-    const response = await fetch(url, {});
+    const response = await fetch(url);
 
     const data = await response.json();
     return data;

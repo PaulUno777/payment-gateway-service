@@ -169,3 +169,12 @@ enum Mouvement {
 
 //   @@map("wallets")
 // }
+
+enum RoleType {
+  super_admin
+  client_manager
+  manage_users
+  all
+  new_role
+  api_client
+}

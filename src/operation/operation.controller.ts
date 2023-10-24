@@ -18,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { OperationResponse, UserInfo } from './dto/operation-response.dto';
 import { Observable } from 'rxjs';
-import { RoleType } from '@app/common/prisma/client-auth';
+import { RoleType } from 'src/auth/types/role-type';
 
 @ApiBearerAuth('jwt-auth')
 @HasRole(

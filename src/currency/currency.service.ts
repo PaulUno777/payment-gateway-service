@@ -19,7 +19,7 @@ export class CurrencyService implements OnApplicationBootstrap {
   constructor(private currencyapiService: CurrencyapiService) {}
 
   async onApplicationBootstrap() {
-    //await firstValueFrom(this.updateExchangeRate());
+    await firstValueFrom(this.updateExchangeRate());
   }
 
   convertCurrency(query: ConvertCurrencyRequest): ConvertCurrencyResponse {
@@ -40,7 +40,7 @@ export class CurrencyService implements OnApplicationBootstrap {
     result.updatedAt = this.updateDate;
     result.result = {
       rate: conversionRate,
-      amount: convertedAmount,
+      amount: Math.round(convertedAmount),
     };
 
     return result;

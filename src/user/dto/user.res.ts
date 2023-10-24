@@ -1,5 +1,5 @@
-import { RoleType } from '@app/common/prisma/client-auth';
 import { ApiProperty } from '@nestjs/swagger';
+import { RoleType } from 'src/auth/types/role-type';
 
 export class UserRes {
   @ApiProperty()

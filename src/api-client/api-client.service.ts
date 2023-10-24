@@ -13,7 +13,7 @@ import { UpdateApiClientReq } from './dto/update-api-client.dto';
 import { GetTokenRes } from './dto/get-token.dto copy';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@app/common/prisma';
-import { RoleType } from '@app/common/prisma/client-auth';
+import { RoleType } from 'src/auth/types/role-type';
 
 @Injectable()
 export class ApiClientService {

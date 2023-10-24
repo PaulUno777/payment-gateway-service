@@ -29,5 +29,6 @@ import { ApiClientModule } from 'src/api-client/api-client.module';
     RefreshTokenStrategy,
     HttpAuthStrategy,
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

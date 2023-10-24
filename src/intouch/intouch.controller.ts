@@ -11,15 +11,15 @@ import {
 import { Observable } from 'rxjs';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { HasRole } from '@app/common';
-import { RoleType } from '@app/common/prisma/client-auth';
+import { RoleType } from 'src/auth/types/role-type';
 
+@HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
 @ApiTags('Intouch')
 @Controller('intouch')
 export class IntouchController implements PaymentServiceController {
   constructor(private readonly intouchService: IntouchService) {}
 
   @ApiBearerAuth('jwt-auth')
-  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
   @Get('account/balance')
   getAccountBalance():
     | Observable<AccountBalanceResponse>
@@ -28,7 +28,6 @@ export class IntouchController implements PaymentServiceController {
   }
 
   @ApiBearerAuth('jwt-auth')
-  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
   @Post('transaction/status')
   checkTransactionStatus(
     @Body() request: StatusRequest,
@@ -37,7 +36,6 @@ export class IntouchController implements PaymentServiceController {
   }
 
   @ApiBearerAuth('jwt-auth')
-  @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
   @Post('transaction/cash-in')
   cashIn(
     @Body() request: FinanceRequest,

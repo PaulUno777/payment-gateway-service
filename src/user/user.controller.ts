@@ -8,7 +8,7 @@ import {
 import { UserService } from './user.service';
 import { CurrentUser, HasRole } from '@app/common';
 import { UserRes } from './dto/user.res';
-import { RoleType } from '@app/common/prisma/client-auth';
+import { RoleType } from 'src/auth/types/role-type';
 
 @Controller('user')
 @ApiTags('Current User')
