@@ -9,6 +9,13 @@ services:
     ports:
       - 3050:3050
     networks:
-      - kmx_payment_Local
+      kmx_payment_Local:
+        ipv4_address: 192.168.0.5
+
 networks:
   kmx_payment_Local:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.0.0/20

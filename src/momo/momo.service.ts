@@ -54,7 +54,7 @@ export class MomoService
   }
 
   setProviderInfo(): Promise<string[]> | Observable<string[]> {
-    return from(this.infoMomoService.getProviderInfo({})).pipe(
+    return from(this.infoMomoService.getProviderInfo()).pipe(
       map((response) => {
         const codes = response.providers.map((elt) => {
           return elt.operatorCode;
