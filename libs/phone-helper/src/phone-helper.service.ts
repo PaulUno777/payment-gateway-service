@@ -9,11 +9,14 @@ export class PhoneHelperService {
   constructor(private readonly cmPhoneHelper: CmPhoneHelper) {
     this.phoneHelpers = new Set([this.cmPhoneHelper]);
   }
-  load(countryAlpha2: any): IPhoneHelper {
+  load(countryAlpha2: any, partyIdType: any): IPhoneHelper {
     this.logger.log('Loading phone lib...');
 
     for (const helper of this.phoneHelpers) {
-      if (helper.applyCountry === countryAlpha2) {
+      if (
+        helper.applyCountry === countryAlpha2 &&
+        helper.partyIdType === partyIdType
+      ) {
         return helper;
       }
     }

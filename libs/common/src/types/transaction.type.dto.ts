@@ -1,11 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Mouvement, ProviderCode, SourceType } from '@prisma/client';
+import {
+  ExecutionReport,
+  Mouvement,
+  PartyIdType,
+  ProviderCode,
+  SourceType,
+} from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
-  IsISO31661Alpha3,
+  IsArray,
+  IsISO31661Alpha2,
   IsIn,
   IsNumber,
-  IsNumberString,
   IsOptional,
   IsString,
   Min,
@@ -16,18 +22,14 @@ import {
   ORIGINAL_CURRENCIES_AVAILABLE,
 } from '../constants';
 
-export class ExecutionReport {
-  @ApiProperty({ description: '' })
-  startLog?: any;
+class PayeeId {
+  @ApiProperty()
+  @IsIn(Object.values(PartyIdType))
+  partyIdType: PartyIdType;
 
-  @ApiProperty({ description: '' })
-  startSignature?: string;
-
-  @ApiProperty({ description: '' })
-  endLog?: any;
-
-  @ApiProperty({ description: '' })
-  endSignature?: string;
+  @ApiProperty()
+  @IsString()
+  partyId: string;
 }
 
 export class Source {
@@ -53,22 +55,23 @@ export class SenderDetails {
   @IsOptional()
   name: string;
 
-  @ApiProperty({ description: '', default: 'CMR' })
-  @IsISO31661Alpha3()
+  @ApiProperty({ description: '', default: 'CM' })
+  @IsISO31661Alpha2()
   country: string;
 }
 
 export class RecipientDetails {
   @ApiProperty({ description: '' })
-  @IsNumberString()
-  id: string;
+  @ValidateNested()
+  @Type(() => PayeeId)
+  payeeId: PayeeId;
 
   @ApiPropertyOptional({ description: '', default: 'Optional' })
   @IsOptional()
   name?: string;
 
-  @ApiProperty({ description: '', default: 'CMR' })
-  @IsISO31661Alpha3()
+  @ApiProperty({ description: '', default: 'CM' })
+  @IsISO31661Alpha2()
   country: string;
 }
 
@@ -105,33 +108,21 @@ export class TransactionEntity {
   CompletedAt: Date;
 
   @ApiProperty({ description: '' })
-  @ValidateNested()
-  @Type(() => Source)
   source: Source;
 
   @ApiProperty({ description: '' })
-  @ValidateNested()
-  @Type(() => SenderDetails)
   senderDetails: SenderDetails;
 
   @ApiProperty({ description: '' })
-  @ValidateNested()
-  @Type(() => RecipientDetails)
   recipientDetails: RecipientDetails;
 
-  @ApiProperty({ description: '' })
-  @ValidateNested()
-  @Type(() => Amount)
+  @ApiProperty({ default: 0 })
   amount: Amount;
-
-  @ApiPropertyOptional({ description: '' })
-  @IsOptional()
-  PrividerCode: ProviderCode;
 
   @ApiProperty({ default: 0 })
   fees: Date;
 
-  @ApiProperty({ description: '' })
+  @ApiPropertyOptional({ description: '' })
   callbackUrl?: string;
 
   @ApiProperty({ description: '' })
@@ -142,12 +133,13 @@ export class TransactionEntity {
 
   @ApiProperty({
     description: 'The direction of tansaction',
-    default: 'WITHDRAWAL',
+    default: Mouvement.WITHDRAWAL,
   })
   mouvement: Mouvement;
 
-  @ApiProperty({ description: '' })
-  @ValidateNested()
-  @Type(() => ExecutionReport)
-  report: ExecutionReport;
+  @ApiProperty({ default: [] })
+  executionReports: ExecutionReport[];
+
+  @ApiProperty({ default: ProviderCode.CM_INTOUCH })
+  providerCode: ProviderCode;
 }

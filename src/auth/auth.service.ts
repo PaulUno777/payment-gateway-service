@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConnectionErrorException, hashData, verifyHash } from '@app/common';
 import { AuthUserRes } from './dto/auth-user.res';
 import { AuthUserReq } from './dto/auth-user.req';
-import { GetTokenRes } from 'src/api-client/dto/get-token.dto copy';
+import { GetTokenRes } from 'src/auth/dto/get-token.dto copy';
 import { SourceType } from '@prisma/client';
 import { Collection, Db, MongoClient, ObjectId } from 'mongodb';
 import { PrismaService } from '@app/common/prisma';
@@ -169,12 +169,13 @@ export class AuthService {
     };
   }
 
-  async getAccessToken(apiId: string, apiKey: string): Promise<GetTokenRes> {
+  async getAccessToken(sub: string, name: string): Promise<GetTokenRes> {
     const at = await this.jwtService.signAsync(
       {
-        sub: apiId,
-        apiKey,
+        sub,
+        email: name,
         role: RoleType.api_client,
+        type: SourceType.SERVICE,
       },
       {
         expiresIn: 3600,

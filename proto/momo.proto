@@ -77,7 +77,7 @@ message StatusData{
     string financialTransactionId = 7;
     string externalId = 8;
     string errorMessage = 9;
-    double amount = 10;
+    string amount = 10;
     double fees =11;
 }
 
@@ -101,6 +101,7 @@ message FinanceData{
     string payToken = 1;
     Payer payer = 2;
     Payer payee = 3;
+    double  amount = 4;
 }
 
 message ProviderResponse {

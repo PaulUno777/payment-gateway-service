@@ -25,8 +25,8 @@ model ApiClient {
   updatedAt DateTime @updatedAt
 
   name        String  @unique
-  apiKey      String? @unique @default(uuid())
-  secretKey   String? @unique @default(uuid())
+  apiKey      String? @unique
+  secretKey   String? @unique
   isActive    Boolean @default(true)
   description String?
   webhookUrl  String?
@@ -99,10 +99,11 @@ model ExecutionReport {
   createdAt   DateTime  @default(now())
   CompletedAt DateTime? @updatedAt
 
-  startLog   Json?
-  startTrace String?
-  endLog     Json?
-  endTrace   String?
+  providerCode ProviderCode?
+  startLog     Json
+  startTrace   String
+  endLog       Json?
+  endTrace     String?
 
   Transaction   Transaction? @relation(fields: [transactionId], references: [id])
   transactionId String?      @db.ObjectId
@@ -122,10 +123,21 @@ type SenderDetails {
   country String?
 }
 
+type PayeeId {
+  partyIdType PartyIdType @default(MSISDN)
+  partyId     String
+}
+
+enum PartyIdType {
+  MSISDN
+  IBAN
+  CARD_NUMBER
+}
+
 type RecipientDetails {
-  id      String
+  payeeId PayeeId
   name    String?
-  country String  @default("CMR")
+  country String  @default("CM")
 }
 
 type Amount {

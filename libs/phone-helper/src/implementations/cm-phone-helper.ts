@@ -1,13 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import parsePhoneNumberFromString, { CountryCode } from 'libphonenumber-js';
 import { IPhoneHelper } from '@app/common/interfaces';
-import { ProviderCode } from '@prisma/client';
+import { PartyIdType, ProviderCode } from '@prisma/client';
 
 @Injectable()
 export class CmPhoneHelper implements IPhoneHelper {
   applyCountry: CountryCode;
+  partyIdType: PartyIdType;
   constructor() {
     this.applyCountry = 'CM';
+    this.partyIdType = PartyIdType.MSISDN;
   }
 
   formatPhoneNumber(phoneNumber: string): string {

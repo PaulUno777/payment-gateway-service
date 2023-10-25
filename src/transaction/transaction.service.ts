@@ -1,15 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UpdateTransactionRequest } from './dto/update-transaction.dto';
 import { PhoneHelperService } from '@app/phone-helper';
-import { catchError, from } from 'rxjs';
+import { catchError, from, map, switchMap } from 'rxjs';
 import { PrismaService } from '@app/common/prisma';
 import { ConnectionErrorException } from '@app/common';
-import { AllTransactionRequest } from './dto/all-transaction-request.dto';
-import { CreateTransactionRequest } from './dto/create-transaction-request.dto';
+import {
+  CreateTransactionRequest,
+  UpdateTransactionRequest,
+} from './dto/transaction-request.dto';
+import { State } from '@prisma/client';
 
 @Injectable()
 export class TransactionService {
-  allPaginated(request: AllTransactionRequest) {
+  allPaginated() {
     throw new Error('Method not implemented.');
   }
   constructor(
@@ -17,29 +19,28 @@ export class TransactionService {
     private phoneHelper: PhoneHelperService,
   ) {}
 
-  test(country: string) {
-    const helper = this.phoneHelper.load(country);
-    console.log('helper', helper);
-    const formatedNumber = helper.getProviderCodeByMsisdn('23795839599');
-    return formatedNumber;
-  }
-
   create(request: CreateTransactionRequest) {
     return from(this.prisma.transaction.create({ data: request })).pipe(
-      catchError((error) => {
-        console.error(error);
+      catchError(() => {
         throw new ConnectionErrorException();
       }),
     );
   }
 
   findAll() {
-    return `This action returns all transaction`;
+    return from(this.prisma.transaction.findMany()).pipe(
+      catchError(() => {
+        throw new ConnectionErrorException();
+      }),
+    );
   }
 
   findOne(id: string) {
     return from(
-      this.prisma.transaction.findFirstOrThrow({ where: { id: id } }),
+      this.prisma.transaction.findFirstOrThrow({
+        where: { id: id },
+        include: { executionReports: true },
+      }),
     ).pipe(
       catchError((error) => {
         console.error(error);
@@ -51,12 +52,15 @@ export class TransactionService {
   }
 
   update(id: string, updateRequest: UpdateTransactionRequest) {
-    return from(
-      this.prisma.transaction.update({
-        where: { id: id },
-        data: updateRequest,
+    return this.findOne(id).pipe(
+      switchMap((transaction) => {
+        return from(
+          this.prisma.transaction.update({
+            where: { id: transaction.id },
+            data: updateRequest,
+          }),
+        );
       }),
-    ).pipe(
       catchError((error) => {
         console.error(error);
         throw new ConnectionErrorException();
@@ -64,7 +68,20 @@ export class TransactionService {
     );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} transaction`;
+  cancel(id: string) {
+    return this.update(id, { state: State.CANCEL })
+      .pipe(
+        map((transaction) => {
+          return {
+            message: `Transaction ${transaction.id} cancelled successfully`,
+          };
+        }),
+      )
+      .pipe(
+        catchError((error) => {
+          console.error(error);
+          throw error;
+        }),
+      );
   }
 }

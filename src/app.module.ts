@@ -13,12 +13,10 @@ import { UserModule } from './user/user.module';
 import { OperationModule } from './operation/operation.module';
 import { CurrencyModule } from './currency/currency.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ConfigurationModule } from './configuration/configuration.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    ScheduleModule.forRoot(),
-    PrismaModule,
     AuthModule,
     UserModule,
     ApiClientModule,
@@ -28,6 +26,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     TransactionModule,
     IntouchModule,
     MomoModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
+    PrismaModule,
+    ConfigurationModule,
   ],
   providers: [
     {

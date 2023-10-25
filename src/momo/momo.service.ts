@@ -1,4 +1,9 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  OnApplicationBootstrap,
+  OnModuleInit,
+} from '@nestjs/common';
 import {
   FinanceRequest,
   FinanceResponse,
@@ -9,7 +14,7 @@ import {
   UserInfosRequest,
   UserInfosResponse,
 } from './momo';
-import { Observable } from 'rxjs';
+import { Observable, from, map, of } from 'rxjs';
 import { ClientGrpc } from '@nestjs/microservices';
 import { MOMO_PACKAGE_NAME } from '@app/common/constants';
 import { PaymentOperator } from '@app/common/abstactions';
@@ -20,7 +25,7 @@ import { ProviderCode } from '@prisma/client';
 @Injectable()
 export class MomoService
   extends PaymentOperator
-  implements CashInProvider, OnModuleInit
+  implements CashInProvider, OnModuleInit, OnApplicationBootstrap
 {
   private paymentService: PaymentServiceClient;
 
@@ -29,7 +34,7 @@ export class MomoService
     private infoMomoService: InfoMomoService,
   ) {
     super();
-    this.code = [
+    this.codes = [
       ProviderCode.CM_MTN_MOBILE_MONEY,
       ProviderCode.CM_ORANGE_MONEY,
     ];
@@ -38,6 +43,26 @@ export class MomoService
   onModuleInit() {
     this.paymentService =
       this.client.getService<PaymentServiceClient>(PAYMENT_SERVICE_NAME);
+  }
+
+  onApplicationBootstrap() {
+    return this.setProviderInfo();
+  }
+
+  getProviderInfo(): Promise<string[]> | Observable<string[]> {
+    return of(this.codes);
+  }
+
+  setProviderInfo(): Promise<string[]> | Observable<string[]> {
+    return from(this.infoMomoService.getProviderInfo({})).pipe(
+      map((response) => {
+        const codes = response.providers.map((elt) => {
+          return elt.operatorCode;
+        });
+        this.codes = codes;
+        return codes;
+      }),
+    );
   }
 
   cashIn(request: FinanceRequest): Observable<FinanceResponse> {

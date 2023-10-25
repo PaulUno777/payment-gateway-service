@@ -2,8 +2,10 @@ import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { IsPublic } from '@app/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AllTransactionRequest } from './dto/all-transaction-request.dto';
-import { CreateTransactionRequest } from './dto/create-transaction-request.dto';
+import {
+  CreateTransactionRequest,
+  PeageableTransactionRequest,
+} from './dto/transaction-request.dto';
 
 @IsPublic()
 @ApiTags('Transactions')
@@ -17,13 +19,8 @@ export class TransactionController {
   }
 
   @Post('all-paginated')
-  allPaginated(@Body() request: AllTransactionRequest) {
-    return this.transactionService.allPaginated(request);
-  }
-
-  @Get()
-  findAll() {
-    return this.transactionService.test('CM');
+  allPaginated(@Body() request: PeageableTransactionRequest) {
+    return this.transactionService.allPaginated();
   }
 
   @Get(':id')

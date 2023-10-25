@@ -1,14 +1,10 @@
+import { Amount, RecipientDetails, SenderDetails } from '@app/common/types';
 import { ApiProperty } from '@nestjs/swagger';
 import { ProviderCode } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsIn, ValidateNested, IsOptional } from 'class-validator';
-import {
-  Amount,
-  RecipientDetails,
-  SenderDetails,
-} from '../../../libs/common/src/types/transaction.type.dto';
 
-export class AllTransactionRequest {
+export class AllTransactionResponse {
   @ApiProperty({ description: '' })
   @ValidateNested()
   @Type(() => SenderDetails)

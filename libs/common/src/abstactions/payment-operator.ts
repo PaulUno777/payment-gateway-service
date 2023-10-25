@@ -8,20 +8,26 @@ import {
   UserInfosProvider,
 } from '../interfaces';
 import {
+  Empty,
   FinanceRequest,
   FinanceResponse,
+  ProviderInfoResponse,
   StatusRequest,
   StatusResponse,
   UserInfosRequest,
   UserInfosResponse,
 } from 'src/momo/momo';
 import { Observable } from 'rxjs';
-import { Empty, Amount, AccountBalanceResponse } from 'src/intouch/intouch';
+import { Amount, AccountBalanceResponse } from 'src/intouch/intouch';
 
 export abstract class PaymentOperator {
   logger?: Logger;
 
-  code?: ProviderCode[] | string[];
+  codes?: ProviderCode[] | string[];
+
+  getProviderInfo(): Promise<string[]> | Observable<string[]> {
+    throw new Error('Method not implemented.');
+  }
 
   getAccountBalance(
     request: Empty,

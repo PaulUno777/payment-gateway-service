@@ -5,6 +5,7 @@ import { ApiClientService } from 'src/api-client/api-client.service';
 import { Request } from 'express';
 import { SourceType } from '@prisma/client';
 import { RoleType } from '../types/role-type';
+import { JwtPayload } from '../types/jwt-payload.type';
 
 @Injectable()
 export class HttpAuthStrategy extends PassportStrategy(BasicStrategy, 'basic') {
@@ -14,7 +15,7 @@ export class HttpAuthStrategy extends PassportStrategy(BasicStrategy, 'basic') {
     });
   }
 
-  async validate(req: Request): Promise<any> {
+  async validate(req: Request): Promise<JwtPayload> {
     const encodedCredentials = req
       .get('authorization')
       .replace('Basic', '')
@@ -29,9 +30,10 @@ export class HttpAuthStrategy extends PassportStrategy(BasicStrategy, 'basic') {
     if (!apiClient) {
       throw new UnauthorizedException();
     }
+
     return {
       sub: apiClient.id,
-      email: apiClient.apiKey,
+      email: apiClient.name,
       role: RoleType.api_client,
       type: SourceType.SERVICE,
     };

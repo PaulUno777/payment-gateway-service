@@ -63,7 +63,7 @@ export class PaymentProviderService {
   }
 
   findByCode(code: ProviderCode): Observable<PaymentProvider> {
-    this.logger.log('Finding payment provider by code ...');
+    this.logger.log('= = => Finding payment provider by code <= = =');
     return from(
       this.prisma.paymentProvider.findFirstOrThrow({
         where: { code: code, isActive: true },
@@ -71,7 +71,7 @@ export class PaymentProviderService {
     ).pipe(
       catchError((error) => {
         if (error.code === 'P2025')
-          throw new NotFoundException('Provider Not Found');
+          throw new NotFoundException('Provider unavailable at the moment.');
         throw new ConnectionErrorException();
       }),
     );

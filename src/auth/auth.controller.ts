@@ -63,6 +63,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Get access token from api client' })
   @Get('token')
   getAccessToken(@CurrentUser() client: any) {
-    return this.authService.getAccessToken(client.id, client.apiKey);
+    return this.authService.getAccessToken(client.sub, client.email);
   }
 }

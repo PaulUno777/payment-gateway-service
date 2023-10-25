@@ -24,7 +24,7 @@ export class IntouchService
 
   constructor(@Inject(INTOUCH_PACKAGE_NAME) private client: ClientGrpc) {
     super();
-    this.code = [ProviderCode.CM_INTOUCH];
+    this.codes = [ProviderCode.CM_INTOUCH];
   }
 
   onModuleInit() {

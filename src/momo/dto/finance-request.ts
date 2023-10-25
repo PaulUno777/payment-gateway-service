@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ProviderCode } from '@prisma/client';
 import { IsIn, IsMobilePhone, IsString, Min } from 'class-validator';
 
 export class FinanceRequest {
@@ -18,20 +19,10 @@ export class FinanceRequest {
   @IsString()
   description: string;
 
-  @ApiProperty()
-  callbackUrl: string;
-
-  @ApiProperty()
-  @IsString()
-  externalId: string;
-
-  @ApiProperty()
-  payToken: string;
-
-  @ApiProperty()
-  @IsIn(['MTN_MOBILE_MONEY', 'ORANGE_MONEY', 'INTOUCH'])
-  providerCode: string;
-
   @ApiPropertyOptional()
-  apiClient: string;
+  payToken?: string;
+
+  @ApiProperty()
+  @IsIn(Object.values(ProviderCode))
+  providerCode: string;
 }

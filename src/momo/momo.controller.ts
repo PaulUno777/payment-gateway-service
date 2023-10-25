@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Get } from '@nestjs/common';
 import { MomoService } from './momo.service';
 import {
   FinanceResponse,
@@ -20,11 +20,17 @@ export class MomoController implements PaymentServiceController {
   constructor(private readonly momoService: MomoService) {}
 
   @IsPublic()
+  @Get('/get-codes')
+  getCodes(): Observable<string[]> | Promise<string[]> {
+    return this.momoService.getProviderInfo();
+  }
+
+  @IsPublic()
   @Post('/cash-in')
   cashIn(
     @Body()
     request: FinanceRequest,
-  ): FinanceResponse | Observable<FinanceResponse> | Promise<FinanceResponse> {
+  ): Observable<FinanceResponse> | Promise<FinanceResponse> {
     return this.momoService.cashIn(request);
   }
 
@@ -33,7 +39,7 @@ export class MomoController implements PaymentServiceController {
   cashOut(
     @Body()
     request: FinanceRequest,
-  ): FinanceResponse | Observable<FinanceResponse> | Promise<FinanceResponse> {
+  ): Observable<FinanceResponse> | Promise<FinanceResponse> {
     return this.momoService.cashOut(request);
   }
 

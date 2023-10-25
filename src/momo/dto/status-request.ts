@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ProviderCode } from '@prisma/client';
 import { IsIn, IsString } from 'class-validator';
 export class StatusRequest {
   @ApiProperty()
@@ -14,6 +15,6 @@ export class StatusRequest {
   mouvement: string;
 
   @ApiProperty()
-  @IsIn(['MTN_MOBILE_MONEY', 'ORANGE_MONEY', 'INTOUCH'])
+  @IsIn(Object.keys(ProviderCode))
   providerCode: string;
 }

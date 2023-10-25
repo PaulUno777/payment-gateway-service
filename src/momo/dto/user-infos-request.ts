@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsPhoneNumber } from 'class-validator';
+import { ProviderCode } from '@prisma/client';
+import { IsIn, IsNumberString } from 'class-validator';
 
 export class UserInfosRequest {
   @ApiProperty()
-  @IsPhoneNumber('CM', { message: 'Cameroun number only' })
+  @IsNumberString()
   phoneNumber: string;
 
   @ApiProperty()
-  @IsIn(['MTN_MOBILE_MONEY', 'ORANGE_MONEY', 'INTOUCH'])
+  @IsIn(Object.keys(ProviderCode))
   providerCode: string;
 }

@@ -19,6 +19,7 @@ import {
 import { OperationResponse, UserInfo } from './dto/operation-response.dto';
 import { Observable } from 'rxjs';
 import { RoleType } from 'src/auth/types/role-type';
+import { PartyIdType } from '@prisma/client';
 
 @ApiBearerAuth('jwt-auth')
 @HasRole(
@@ -32,15 +33,15 @@ import { RoleType } from 'src/auth/types/role-type';
 export class OperationController {
   constructor(private readonly operationService: OperationService) {}
 
-  // @ApiCreatedResponse({
-  //   description: 'Returns authentification tokens',
-  //   type: OperationResponse,
-  // })
-  // @ApiOperation({ summary: 'make a payment' })
-  // @Post('cash-in')
-  // cashin(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
-  //   return this.operationService.cashin(source, operationRequest);
-  // }
+  @ApiCreatedResponse({
+    description: 'Returns authentification tokens',
+    type: OperationResponse,
+  })
+  @ApiOperation({ summary: 'make a payment' })
+  @Post('cash-in')
+  cashin(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
+    return this.operationService.cashin(source, operationRequest);
+  }
 
   // @ApiCreatedResponse({
   //   description: 'Returns Transaction',
@@ -67,13 +68,22 @@ export class OperationController {
     type: UserInfo,
   })
   @ApiOperation({ summary: "Retrieve the subscriber's name from their Msisdn" })
-  @Get('subscriber-info/:countryIsoAlpha2/:msisdn')
+  @Get('subscriber-info/:countryIsoAlpha2/:partyIdType/:partyId')
   getSubscriberInfos(
     @Param('countryIsoAlpha2') country: string,
-    @Param('msisdn') msisdn: string,
+    @Param('partyIdType') partyIdType: string,
+    @Param('partyId') partyId: string,
   ): Observable<UserInfo> {
-    if (country.length != 2 || /\D/.test(msisdn))
-      throw new BadRequestException('make sure your parameters are valid');
-    return this.operationService.getSubscriberInfos(country, msisdn);
+    if (!Object.keys(PartyIdType).includes(partyIdType))
+      throw new BadRequestException(
+        `Available partyIdType are ${Object.keys(PartyIdType)}`,
+      );
+    if (country.length != 2 || /\D/.test(partyId))
+      throw new BadRequestException('Make sure your parameters are valid');
+    return this.operationService.getSubscriberInfos(
+      country,
+      partyIdType,
+      partyId,
+    );
   }
 }

@@ -1,11 +1,10 @@
 /* eslint-disable */
-import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
-import { Observable } from "rxjs";
+import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
 
-export const protobufPackage = "momo_package";
+export const protobufPackage = 'momo_package';
 
-export interface Empty {
-}
+export interface Empty {}
 
 export interface ProviderInfoResponse {
   providers: ProviderInfo[];
@@ -77,7 +76,7 @@ export interface FinanceRequest {
   payerPhone: string;
   description: string;
   providerCode: string;
-  payToken: string;
+  payToken?: string;
 }
 
 export interface FinanceResponse {
@@ -105,7 +104,7 @@ export interface Payer {
   partyId: string;
 }
 
-export const MOMO_PACKAGE_PACKAGE_NAME = "momo_package";
+export const MOMO_PACKAGE_PACKAGE_NAME = 'momo_package';
 
 export interface PaymentServiceClient {
   cashIn(request: FinanceRequest): Observable<FinanceResponse>;
@@ -118,33 +117,61 @@ export interface PaymentServiceClient {
 }
 
 export interface PaymentServiceController {
-  cashIn(request: FinanceRequest): Promise<FinanceResponse> | Observable<FinanceResponse> | FinanceResponse;
+  cashIn(
+    request: FinanceRequest,
+  ): Promise<FinanceResponse> | Observable<FinanceResponse> | FinanceResponse;
 
-  cashOut(request: FinanceRequest): Promise<FinanceResponse> | Observable<FinanceResponse> | FinanceResponse;
+  cashOut(
+    request: FinanceRequest,
+  ): Promise<FinanceResponse> | Observable<FinanceResponse> | FinanceResponse;
 
-  checkTransactionStatus(request: StatusRequest): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
+  checkTransactionStatus(
+    request: StatusRequest,
+  ): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
 
   checkUserInfos(
     request: UserInfosRequest,
-  ): Promise<UserInfosResponse> | Observable<UserInfosResponse> | UserInfosResponse;
+  ):
+    | Promise<UserInfosResponse>
+    | Observable<UserInfosResponse>
+    | UserInfosResponse;
 }
 
 export function PaymentServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["cashIn", "cashOut", "checkTransactionStatus", "checkUserInfos"];
+    const grpcMethods: string[] = [
+      'cashIn',
+      'cashOut',
+      'checkTransactionStatus',
+      'checkUserInfos',
+    ];
     for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcMethod("PaymentService", method)(constructor.prototype[method], method, descriptor);
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(
+        constructor.prototype,
+        method,
+      );
+      GrpcMethod('PaymentService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
     const grpcStreamMethods: string[] = [];
     for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcStreamMethod("PaymentService", method)(constructor.prototype[method], method, descriptor);
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(
+        constructor.prototype,
+        method,
+      );
+      GrpcStreamMethod('PaymentService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
   };
 }
 
-export const PAYMENT_SERVICE_NAME = "PaymentService";
+export const PAYMENT_SERVICE_NAME = 'PaymentService';
 
 export interface ProviderServiceClient {
   getProviderInfo(request: Empty): Observable<ProviderInfoResponse>;
@@ -153,22 +180,39 @@ export interface ProviderServiceClient {
 export interface ProviderServiceController {
   getProviderInfo(
     request: Empty,
-  ): Promise<ProviderInfoResponse> | Observable<ProviderInfoResponse> | ProviderInfoResponse;
+  ):
+    | Promise<ProviderInfoResponse>
+    | Observable<ProviderInfoResponse>
+    | ProviderInfoResponse;
 }
 
 export function ProviderServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["getProviderInfo"];
+    const grpcMethods: string[] = ['getProviderInfo'];
     for (const method of grpcMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcMethod("ProviderService", method)(constructor.prototype[method], method, descriptor);
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(
+        constructor.prototype,
+        method,
+      );
+      GrpcMethod('ProviderService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
     const grpcStreamMethods: string[] = [];
     for (const method of grpcStreamMethods) {
-      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcStreamMethod("ProviderService", method)(constructor.prototype[method], method, descriptor);
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(
+        constructor.prototype,
+        method,
+      );
+      GrpcStreamMethod('ProviderService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
   };
 }
 
-export const PROVIDER_SERVICE_NAME = "ProviderService";
+export const PROVIDER_SERVICE_NAME = 'ProviderService';

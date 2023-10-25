@@ -59,6 +59,7 @@ export class CurrencyService implements OnApplicationBootstrap {
     return from(this.currencyapiService.latest({ base: 'EUR' })).pipe(
       map((response) => {
         if (response.success) {
+          console.log('Currency rates based on EUR updated');
           this.currencyRateBasedOnEUR = response.rates;
           this.updateDate = response.date;
         }

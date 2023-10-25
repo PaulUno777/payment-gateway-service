@@ -5,7 +5,7 @@ import {
   Source,
 } from '@app/common/types';
 import { ApiProperty } from '@nestjs/swagger';
-import { Mouvement, ProviderCode } from '@prisma/client';
+import { Mouvement, State } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsIn,
@@ -48,4 +48,16 @@ export class CreateTransactionRequest {
   @ApiProperty()
   @IsIn(Object.values(Mouvement))
   mouvement: Mouvement;
+}
+
+export class UpdateTransactionRequest {
+  fees?: number;
+
+  payToken?: string;
+
+  state?: State;
+}
+
+export class PeageableTransactionRequest {
+  page: number;
 }

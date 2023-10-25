@@ -7,36 +7,34 @@ import {
   IsIn,
   IsOptional,
   IsUrl,
-  MaxLength,
-  MinLength,
+  Length,
   ValidateNested,
 } from 'class-validator';
 
 export class OperationRequest {
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: 'Informations about the sender' })
   @ValidateNested()
   @Type(() => SenderDetails)
   senderDetails: SenderDetails;
 
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: 'Informations about the recipient' })
   @ValidateNested()
   @Type(() => RecipientDetails)
   recipientDetails: RecipientDetails;
 
+  @ApiProperty({ description: '' })
+  @ValidateNested()
+  @Type(() => Amount)
+  amount: Amount;
+
   @ApiProperty({ default: '' })
-  @MinLength(10)
-  @MaxLength(128)
+  @Length(8, 127)
   description: string;
 
   @ApiPropertyOptional({ default: 'Optional' })
   @IsOptional()
   @IsUrl()
   callbackUrl?;
-
-  @ApiProperty({ description: '' })
-  @ValidateNested()
-  @Type(() => Amount)
-  amount: Amount;
 
   @ApiPropertyOptional({ description: '', default: 'Optional' })
   @IsIn(arrayProviderCode())

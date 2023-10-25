@@ -7,11 +7,13 @@ import { PaymentProviderModule } from 'src/payment-provider/payment-provider.mod
 import { OperatorGatewayLoader } from './operator-gateway.loader';
 import { IntouchModule } from 'src/intouch/intouch.module';
 import { TransactionModule } from 'src/transaction/transaction.module';
+import { ConfigurationModule } from 'src/configuration/configuration.module';
 
 @Module({
   controllers: [OperationController],
   providers: [OperationService, OperatorGatewayLoader],
   imports: [
+    ConfigurationModule,
     PhoneHelperModule,
     MomoModule,
     PaymentProviderModule,

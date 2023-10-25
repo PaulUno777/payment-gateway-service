@@ -10,18 +10,12 @@ import { ApiClient } from '@prisma/client';
 import { ConnectionErrorException } from '@app/common';
 import { CreateApiClientReq } from './dto/create-api-client.dto';
 import { UpdateApiClientReq } from './dto/update-api-client.dto';
-import { GetTokenRes } from './dto/get-token.dto copy';
-import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@app/common/prisma';
-import { RoleType } from 'src/auth/types/role-type';
 
 @Injectable()
 export class ApiClientService {
   private readonly logger = new Logger(ApiClientService.name);
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   create(
     createDto: CreateApiClientReq,
@@ -169,25 +163,6 @@ export class ApiClientService {
     return {
       apiKey,
       secretKey,
-    };
-  }
-
-  async getAccessToken(apiId: string, apiKey: string): Promise<GetTokenRes> {
-    const token = await this.jwtService.signAsync(
-      {
-        sub: apiId,
-        apiKey,
-        role: RoleType.api_client,
-      },
-      {
-        expiresIn: 3600,
-      },
-    );
-
-    return {
-      accessToken: token,
-      tokenType: 'Bearer',
-      expiresIn: 3600,
     };
   }
 }
