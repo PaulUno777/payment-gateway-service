@@ -1,5 +1,7 @@
 import {
+  BadRequestException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -19,16 +21,24 @@ import { UserInfo } from './dto/operation-response.dto';
 import {
   Mouvement,
   PaymentProvider,
+  ProviderCode,
   State,
   Transaction,
-  ProviderCode,
 } from '@prisma/client';
 import { OperatorGatewayLoader } from './operator-gateway.loader';
-import { UserInfosProvider } from '@app/common/interfaces';
+import {
+  CheckTransactionStatus,
+  UserInfosProvider,
+} from '@app/common/interfaces';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { CreateTransactionRequest } from 'src/transaction/dto/transaction-request.dto';
 import { ConfigurationService } from 'src/configuration/configuration.service';
-import { FinanceRequest, FinanceResponse } from 'src/momo/momo';
+import {
+  FinanceRequest,
+  FinanceResponse,
+  StatusRequest,
+  StatusResponse,
+} from 'src/momo/momo';
 import { randomUUID } from 'crypto';
 import { ExecutionReportService } from 'src/transaction/execution-report.service';
 
@@ -103,52 +113,48 @@ export class OperationService {
   }
 
   cashin(currentSource, operationRequest: OperationRequest): Observable<any> {
-    this.checkConfiguration();
-    const source = {
-      name: currentSource.email,
-      type: currentSource.type,
-      entityId: currentSource.sub,
-    };
-    const mouvement = Mouvement.DEPOSIT;
-
-    return this.getSubscriberInfos(
-      operationRequest.recipientDetails.country,
-      operationRequest.recipientDetails.payeeId.partyIdType,
-      operationRequest.recipientDetails.payeeId.partyId,
-    ).pipe(
-      switchMap((userInfo) => {
-        const request: CreateTransactionRequest = {
-          ...operationRequest,
-          source,
-          operatorCode: userInfo.provider,
-          mouvement,
-        };
-        const recipient = operationRequest.recipientDetails;
-        request.recipientDetails = {
-          ...recipient,
-          name: userInfo.fullName,
-          payeeId: { ...recipient.payeeId, partyId: userInfo.msisdn },
-        };
-        return from(this.transactionService.create(request)).pipe(
-          switchMap((transaction) => {
-            if (operationRequest.providerCode || this.isAutomatic) {
-              return this.initiateTransaction(transaction);
-            }
-            return of({ message: 'Transaction initiated successfully.' });
-          }),
-        );
-      }),
+    this.logger.log('= = => Make a Cashin <= = =');
+    return this.createTransaction(
+      currentSource,
+      operationRequest,
+      Mouvement.DEPOSIT,
     );
   }
 
   cashout(currentSource, operationRequest: OperationRequest) {
+    this.logger.log('= = => Make a Cashout <= = =');
+
+    return this.createTransaction(
+      currentSource,
+      operationRequest,
+      Mouvement.WITHDRAWAL,
+    );
+  }
+
+  checkPaymentStatus(id: string) {
+    this.logger.log('= = => Check a transaction status <= = =');
+    return this.transactionService.findOne(id).pipe(
+      switchMap((transaction) => {
+        return this.getStatus(transaction).pipe();
+      }),
+      catchError((error) => {
+        throw error;
+      }),
+    );
+  }
+
+  createTransaction(
+    currentSource,
+    operationRequest: OperationRequest,
+    mouvement: Mouvement,
+  ): Observable<{ message: string }> {
     this.checkConfiguration();
+
     const source = {
       name: currentSource.email,
       type: currentSource.type,
       entityId: currentSource.sub,
     };
-    const mouvement = Mouvement.WITHDRAWAL;
 
     return this.getSubscriberInfos(
       operationRequest.recipientDetails.country,
@@ -170,7 +176,7 @@ export class OperationService {
         };
         return from(this.transactionService.create(request)).pipe(
           switchMap((transaction) => {
-            if (operationRequest.providerCode || this.isAutomatic) {
+            if (operationRequest.providerCode && this.isAutomatic) {
               return this.initiateTransaction(transaction);
             }
             return of({ message: 'Transaction initiated successfully.' });
@@ -178,15 +184,19 @@ export class OperationService {
         );
       }),
     );
-  }
-
-  getStatus(id: string) {
-    throw new Error('Method not implemented.');
   }
 
   processTransaction(request: ProcessRequest) {
     return this.transactionService.findOneToRetry(request.id).pipe(
       switchMap((transaction) => {
+        if (
+          request.providerCode !== transaction.operatorCode &&
+          !request.providerCode.includes('AUTO_USSD')
+        )
+          throw new BadRequestException(
+            'Invalid Provider code, this Operator is incompatible with party ID',
+          );
+
         return this.transactionService
           .update(transaction.id, { providerCode: request.providerCode })
           .pipe(
@@ -248,6 +258,8 @@ export class OperationService {
                   ),
                   anotherResult: from(
                     this.executionReportService.create({
+                      providerCode: transaction.providerCode,
+                      payToken: financeResponse.data.payToken,
                       startLog: financeResponse.providerResponse,
                       startTrace: financeResponse.trace,
                       transactionId: transaction.id,
@@ -269,6 +281,8 @@ export class OperationService {
                 ),
                 executionReportUpdate: from(
                   this.executionReportService.create({
+                    providerCode: transaction.providerCode,
+                    payToken: financeResponse.data.payToken,
                     startLog: financeResponse.providerResponse,
                     startTrace: financeResponse.trace,
                     transactionId: transaction.id,
@@ -289,6 +303,69 @@ export class OperationService {
           throw error;
         }),
       );
+  }
+
+  getStatus(
+    transaction: Transaction,
+  ): Observable<{ success: boolean; transaction: Transaction }> {
+    if (transaction.state !== State.PENDING) {
+      return of({ success: true, transaction });
+    }
+
+    const provider: CheckTransactionStatus = this.operatorGatewayLoader.load(
+      transaction.providerCode,
+    );
+    const statusRequest: StatusRequest = {
+      id: transaction.id,
+      mouvement: transaction.mouvement,
+      providerCode: transaction.providerCode,
+      payToken: transaction.payToken,
+    };
+
+    return from(provider.checkTransactionStatus(statusRequest)).pipe(
+      switchMap((status: StatusResponse) => {
+        let state: State = State.PENDING;
+        console.log('status', status);
+        if (status.success) {
+          if (status.data.status === 'SUCCESSFUL') state = State.SUCCESS;
+          if (
+            status.data.status === 'FAILED' ||
+            status.data.status === 'EXPIRED'
+          )
+            state = State.FAILED;
+
+          return forkJoin({
+            transactionUpdate: from(
+              this.transactionService.update(transaction.id, {
+                fees: status.data.fees || 0,
+                state,
+              }),
+            ),
+            executionReport: from(
+              this.executionReportService.update(transaction.id, {
+                endLog: status.providerResponse,
+                endTrace: status.trace,
+              }),
+            ),
+          }).pipe(
+            map((response) => {
+              return { success: true, transaction: response.transactionUpdate };
+            }),
+          );
+        }
+        return of({ success: false, transaction });
+        // return of({
+        //   message:
+        //     'An error occurred at the operator while checking the status of the transaction',
+        // });
+      }),
+      catchError((error) => {
+        throw new InternalServerErrorException(
+          'An unexpected error occurred.',
+          error,
+        );
+      }),
+    );
   }
 
   loadProvider(transaction: Transaction): Observable<PaymentProvider> {

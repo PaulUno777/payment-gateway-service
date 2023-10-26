@@ -1,5 +1,5 @@
 import {
-  BadRequestException,
+  ConflictException,
   Injectable,
   Logger,
   NotFoundException,
@@ -17,9 +17,6 @@ import { State, Transaction } from '@prisma/client';
 @Injectable()
 export class TransactionService {
   private logger = new Logger();
-  allPaginated() {
-    throw new Error('Method not implemented.');
-  }
   constructor(
     private readonly prisma: PrismaService,
     private phoneHelper: PhoneHelperService,
@@ -31,6 +28,25 @@ export class TransactionService {
         throw new ConnectionErrorException();
       }),
     );
+  }
+
+  findAllPending(): Observable<Transaction[]> {
+    this.logger.log('Finding all pending transaction ...');
+    return from(
+      this.prisma.transaction.findMany({
+        where: { state: State.PENDING },
+      }),
+    ).pipe(
+      catchError((error) => {
+        throw new ConnectionErrorException(
+          `Something went wrong with data source \n ${error}`,
+        );
+      }),
+    );
+  }
+
+  allPaginated() {
+    throw new Error('Method not implemented.');
   }
 
   findAll() {
@@ -57,32 +73,42 @@ export class TransactionService {
     );
   }
 
-  update(id: string, updateRequest: UpdateTransactionRequest) {
+  findOneToRetry(id: string) {
+    return from(
+      this.prisma.transaction.findFirstOrThrow({
+        where: {
+          id: id,
+          OR: [{ state: State.CREATED }, { state: State.FAILED }],
+        },
+      }),
+    ).pipe(
+      catchError((error) => {
+        if (error.code && error.code === 'P2025')
+          throw new ConflictException(
+            'We can only process transactions in CREATED or FAILED states.',
+          );
+        throw new ConnectionErrorException();
+      }),
+    );
+  }
+
+  update(
+    id: string,
+    updateRequest: UpdateTransactionRequest,
+  ): Observable<Transaction> {
     return this.findOne(id).pipe(
       switchMap((transaction) => {
         return from(
           this.prisma.transaction.update({
             where: { id: transaction.id },
             data: updateRequest,
+            include: { executionReports: true },
           }),
         );
       }),
       catchError((error) => {
         console.error(error);
         throw new ConnectionErrorException();
-      }),
-    );
-  }
-
-  findAllPending(): Observable<Transaction[]> {
-    this.logger.log('Finding all payment providers ...');
-    return from(
-      this.prisma.transaction.findMany({ where: { state: State.PENDING } }),
-    ).pipe(
-      catchError((error) => {
-        throw new ConnectionErrorException(
-          `Something went wrong with data source \n ${error}`,
-        );
       }),
     );
   }
@@ -102,24 +128,5 @@ export class TransactionService {
           throw error;
         }),
       );
-  }
-
-  findOneToRetry(id: string) {
-    return from(
-      this.prisma.transaction.findFirstOrThrow({
-        where: {
-          id: id,
-          OR: [{ state: State.CREATED }, { state: State.FAILED }],
-        },
-      }),
-    ).pipe(
-      catchError((error) => {
-        if (error.code && error.code === 'P2025')
-          throw new BadRequestException(
-            'We can only process transactions in CREATED and FAILED states.',
-          );
-        throw new ConnectionErrorException();
-      }),
-    );
   }
 }

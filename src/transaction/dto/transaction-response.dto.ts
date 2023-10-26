@@ -1,6 +1,6 @@
 import { Amount, RecipientDetails, SenderDetails } from '@app/common/types';
 import { ApiProperty } from '@nestjs/swagger';
-import { ProviderCode } from '@prisma/client';
+import { ProviderCode, State } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsIn, ValidateNested, IsOptional } from 'class-validator';
 
@@ -24,4 +24,10 @@ export class AllTransactionResponse {
   @IsIn(Object.values(ProviderCode))
   @IsOptional()
   PrividerCode?: ProviderCode;
+}
+
+export interface PendingTransactionResponse {
+  id: string;
+  state: State;
+  providerCode: ProviderCode;
 }

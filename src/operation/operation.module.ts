@@ -20,5 +20,6 @@ import { ConfigurationModule } from 'src/configuration/configuration.module';
     IntouchModule,
     TransactionModule,
   ],
+  exports: [OperationService],
 })
 export class OperationModule {}

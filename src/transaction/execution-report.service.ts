@@ -25,27 +25,24 @@ export class ExecutionReportService {
     );
   }
 
-  findAll() {
-    return `This action returns all transaction`;
-  }
-
-  findOne(id: string) {
-    this.logger.log('Find an Execution Report based on id');
+  findLast(transactionId): Observable<ExecutionReport> {
     return from(
-      this.prisma.executionReport.findFirstOrThrow({ where: { id: id } }),
+      this.prisma.executionReport.findFirst({
+        where: { transactionId: transactionId },
+        orderBy: { createdAt: 'desc' },
+      }),
     ).pipe(
       catchError((error) => {
-        console.error(error);
         if (error.code && error.code === 'P2025')
-          throw new NotFoundException('Transation not found');
+          throw new NotFoundException('Execution report not found');
         throw new ConnectionErrorException();
       }),
     );
   }
 
-  update(id: string, updateRequest: UpdateReportRequest) {
+  update(transactionId: string, updateRequest: UpdateReportRequest) {
     this.logger.log('Update Execution Report');
-    return from(this.findOne(id)).pipe(
+    return from(this.findLast(transactionId)).pipe(
       switchMap((report) => {
         return from(
           this.prisma.executionReport.update({

@@ -71,8 +71,8 @@ export class OperationController {
   })
   @ApiOperation({ summary: 'Get transaction status' })
   @Get('payment-status/:id')
-  getStatus(@Param('id') id: string) {
-    return this.operationService.getStatus(id);
+  checkPaymentStatus(@Param('id') id: string) {
+    return this.operationService.checkPaymentStatus(id);
   }
 
   @ApiOkResponse({
