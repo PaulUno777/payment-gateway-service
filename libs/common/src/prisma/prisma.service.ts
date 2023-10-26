@@ -25,11 +25,7 @@ export class PrismaService
     await this.$disconnect();
   }
 
-  async paginate<T>(
-    model: string,
-    pageable: Pageable,
-    filter: Filter,
-  ): Promise<Page<T>> {
+  async paginate<T>(model: string, pageable: Pageable): Promise<Page<T>> {
     const { page = 1, size = 20 } = pageable;
     const skip = (page - 1) * size;
 
@@ -47,10 +43,21 @@ export class PrismaService
       },
     };
 
-    // Add the filter to the query if it is provided
-    if (filter) {
-      if (filter.where) query['where'] = filter.where;
-      if (filter.include) query['where'] = filter.include;
+    // Add the where clause to the query if it is provided
+    const where = {};
+    if (
+      pageable.filter &&
+      pageable.filter.length > 0 &&
+      pageable.filter[0].includes('_')
+    ) {
+      pageable.filter.forEach((filterElement) => {
+        const lastIndex = filterElement.indexOf('_');
+        const field = filterElement.substring(0, lastIndex);
+        const value = filterElement.substring(lastIndex + 1);
+
+        where[field] = value;
+      });
+      query['where'] = where;
     }
 
     // Add the orderBy to the query if it is provided
@@ -69,7 +76,11 @@ export class PrismaService
       query['orderBy'] = sort;
       resultPage.metaData.sort = sort;
       isSorted = true;
+    } else {
+      query['orderBy'] = { createdAt: 'desc' };
     }
+
+    console.log('query', query);
 
     const [data, count] = await Promise.all<[T[], number]>([
       this[model].findMany(query),
@@ -116,6 +127,7 @@ type MetaData = {
   size: number;
   totalPages: number;
   sort?: Array<{ [key: string]: 'asc' | 'desc' | string }>;
+  filter?: { [key: string]: any };
 };
 
 export interface Page<T> {
@@ -128,12 +140,10 @@ export interface Pageable {
   page?: number;
   size?: number;
   sort?: string[];
+  filter?: string[];
+  include?: string[];
+  select?: string[];
   route?: string;
-}
-
-export interface Filter {
-  where?: any;
-  include?: any;
 }
 
 type Links = {

@@ -37,8 +37,8 @@ export class OperationController {
     description: 'Returns authentification tokens',
     type: OperationResponse,
   })
-  @ApiOperation({ summary: 'Make a disbursement' })
-  @Post('cash-in')
+  @ApiOperation({ summary: 'Initiate a disbursement' })
+  @Post('cashin')
   cashin(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
     return this.operationService.cashin(source, operationRequest);
   }
@@ -47,20 +47,20 @@ export class OperationController {
     description: 'Returns Transaction',
     type: OperationResponse,
   })
-  @ApiOperation({ summary: 'make a payment' })
-  @Post('cash-out')
+  @ApiOperation({ summary: 'Initiate a collection' })
+  @Post('cashout')
   cashout(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
     return this.operationService.cashout(source, operationRequest);
   }
 
   @ApiOkResponse({
-    description: 'Initiate a transaction at the created or failed stage',
+    description: 'Process a transaction at the created or failed stage',
     type: OperationResponse,
   })
   @ApiOperation({
-    summary: 'Initiate created or failed transaction',
+    summary: 'Process created or failed transaction',
   })
-  @Post('process-transaction')
+  @Post('process')
   processTransaction(@Body() processRequest: ProcessRequest) {
     return this.operationService.processTransaction(processRequest);
   }
@@ -70,7 +70,7 @@ export class OperationController {
     type: OperationResponse,
   })
   @ApiOperation({ summary: 'Get transaction status' })
-  @Get('payment-status/:id')
+  @Get('status/:id')
   checkPaymentStatus(@Param('id') id: string) {
     return this.operationService.checkPaymentStatus(id);
   }
@@ -80,7 +80,7 @@ export class OperationController {
     type: UserInfo,
   })
   @ApiOperation({ summary: "Retrieve the subscriber's name from their Msisdn" })
-  @Get('subscriber-info/:countryIsoAlpha2/:partyIdType/:partyId')
+  @Get('subscriber/info/:countryIsoAlpha2/:partyIdType/:partyId')
   getSubscriberInfos(
     @Param('countryIsoAlpha2') country: string,
     @Param('partyIdType') partyIdType: string,

@@ -11,12 +11,12 @@ import { ExecutionReport } from '@prisma/client';
 @Injectable()
 export class ExecutionReportService {
   private logger = new Logger();
-  allPaginated() {
-    throw new Error('Method not implemented.');
-  }
+
   constructor(private readonly prisma: PrismaService) {}
 
   create(request: CreateReportRequest): Observable<ExecutionReport> {
+    this.logger.log('----- Create an execution report -----');
+
     return from(this.prisma.executionReport.create({ data: request })).pipe(
       catchError((error) => {
         console.error(error);
@@ -26,6 +26,8 @@ export class ExecutionReportService {
   }
 
   findLast(transactionId): Observable<ExecutionReport> {
+    this.logger.log('----- Find last execution report of a transaction-----');
+
     return from(
       this.prisma.executionReport.findFirst({
         where: { transactionId: transactionId },
@@ -41,7 +43,8 @@ export class ExecutionReportService {
   }
 
   update(transactionId: string, updateRequest: UpdateReportRequest) {
-    this.logger.log('Update Execution Report');
+    this.logger.log('----- Update Execution Report -----');
+
     return from(this.findLast(transactionId)).pipe(
       switchMap((report) => {
         return from(

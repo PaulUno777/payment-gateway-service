@@ -4,14 +4,17 @@ import {
   SenderDetails,
   Source,
 } from '@app/common/types';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Mouvement, ProviderCode, State } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsIn,
+  IsNumber,
   IsOptional,
   IsUrl,
   Length,
+  Min,
   ValidateNested,
 } from 'class-validator';
 
@@ -62,6 +65,24 @@ export class UpdateTransactionRequest {
   providerCode?: ProviderCode;
 }
 
-export class PeageableTransactionRequest {
-  page: number;
+export class PageableTransaction {
+  @ApiPropertyOptional({ default: 1 })
+  @IsOptional()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ default: 15 })
+  @IsOptional()
+  @Min(1)
+  size?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  sort?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  filter?: string[];
 }

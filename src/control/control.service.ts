@@ -12,25 +12,28 @@ export class ControlService {
     private readonly operationService: OperationService,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES, { name: 'status checker job' })
   checkTransactionState() {
-    return this.transactionService.findAllPending().pipe(
-      switchMap((transactions) => {
-        return forkJoin(
-          transactions.map((transaction) =>
-            this.operationService.getStatus(transaction).pipe(
-              map((response) => {
-                console.log(
-                  `[checkState] state of tansaction ${response.transaction.id} ${response.transaction.state} [${response.success}]`,
-                );
-              }),
-              catchError((error) => {
-                throw error;
-              }),
+    return this.transactionService
+      .findAllPending()
+      .pipe(
+        switchMap((transactions) => {
+          return forkJoin(
+            transactions.map((transaction) =>
+              this.operationService.getStatus(transaction).pipe(
+                map((response) => {
+                  console.log(
+                    `[checkState] state of tansaction ${response.transaction.id} ${response.transaction.state} [${response.success}]`,
+                  );
+                }),
+                catchError((error) => {
+                  throw error;
+                }),
+              ),
             ),
-          ),
-        );
-      }),
-    );
+          );
+        }),
+      )
+      .subscribe();
   }
 }

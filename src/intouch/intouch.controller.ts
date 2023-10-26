@@ -10,16 +10,15 @@ import {
 } from './intouch';
 import { Observable } from 'rxjs';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { HasRole } from '@app/common';
+import { HasRole, IsPublic } from '@app/common';
 import { RoleType } from 'src/auth/types/role-type';
 
-@HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.client_manager)
-@ApiTags('Intouch')
+@IsPublic()
+@ApiTags('Intouch for test purpose only')
 @Controller('intouch')
 export class IntouchController implements PaymentServiceController {
   constructor(private readonly intouchService: IntouchService) {}
 
-  @ApiBearerAuth('jwt-auth')
   @Get('account/balance')
   getAccountBalance():
     | Observable<AccountBalanceResponse>
@@ -27,7 +26,6 @@ export class IntouchController implements PaymentServiceController {
     return this.intouchService.getAccountBalance({});
   }
 
-  @ApiBearerAuth('jwt-auth')
   @Post('transaction/status')
   checkTransactionStatus(
     @Body() request: StatusRequest,
@@ -35,8 +33,7 @@ export class IntouchController implements PaymentServiceController {
     return this.intouchService.checkTransactionStatus(request);
   }
 
-  @ApiBearerAuth('jwt-auth')
-  @Post('transaction/cash-in')
+  @Post('transaction/cashin')
   cashIn(
     @Body() request: FinanceRequest,
   ): Observable<FinanceResponse> | Promise<FinanceResponse> {

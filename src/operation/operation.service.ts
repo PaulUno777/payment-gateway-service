@@ -1,3 +1,4 @@
+import { transactionId } from './../intouch/dto/transaction-id.dto';
 import {
   BadRequestException,
   Injectable,
@@ -18,13 +19,7 @@ import {
   switchMap,
 } from 'rxjs';
 import { UserInfo } from './dto/operation-response.dto';
-import {
-  Mouvement,
-  PaymentProvider,
-  ProviderCode,
-  State,
-  Transaction,
-} from '@prisma/client';
+import { Mouvement, PaymentProvider, State, Transaction } from '@prisma/client';
 import { OperatorGatewayLoader } from './operator-gateway.loader';
 import {
   CheckTransactionStatus,
@@ -60,7 +55,7 @@ export class OperationService {
     partyIdType: string,
     partyId: string,
   ): Observable<UserInfo> {
-    this.logger.log("= = => Retrieving the subscriber's information <= = =");
+    this.logger.log("= = => [ Retrieve subscriber's informations ] <= = =");
 
     const helper = this.phoneHelper.load(
       countryAlpha2.toUpperCase(),
@@ -113,7 +108,7 @@ export class OperationService {
   }
 
   cashin(currentSource, operationRequest: OperationRequest): Observable<any> {
-    this.logger.log('= = => Make a Cashin <= = =');
+    this.logger.log('= = => [ Make a Cashin ] <= = =');
     return this.createTransaction(
       currentSource,
       operationRequest,
@@ -122,7 +117,7 @@ export class OperationService {
   }
 
   cashout(currentSource, operationRequest: OperationRequest) {
-    this.logger.log('= = => Make a Cashout <= = =');
+    this.logger.log('= = => [ Make a Cashout ] <= = =');
 
     return this.createTransaction(
       currentSource,
@@ -132,7 +127,7 @@ export class OperationService {
   }
 
   checkPaymentStatus(id: string) {
-    this.logger.log('= = => Check a transaction status <= = =');
+    this.logger.log('= = => [ Check a transaction status ] <= = =');
     return this.transactionService.findOne(id).pipe(
       switchMap((transaction) => {
         return this.getStatus(transaction).pipe();
@@ -179,7 +174,11 @@ export class OperationService {
             if (operationRequest.providerCode && this.isAutomatic) {
               return this.initiateTransaction(transaction);
             }
-            return of({ message: 'Transaction initiated successfully.' });
+            return of({
+              message: 'Transaction initiated successfully.',
+              transactionId: transaction.id,
+              state: transaction.state,
+            });
           }),
         );
       }),
@@ -187,6 +186,10 @@ export class OperationService {
   }
 
   processTransaction(request: ProcessRequest) {
+    this.logger.log(
+      '= = => [ Process a created or failed transaction ] <= = =',
+    );
+
     return this.transactionService.findOneToRetry(request.id).pipe(
       switchMap((transaction) => {
         if (
@@ -267,7 +270,11 @@ export class OperationService {
                   ),
                 }).pipe(
                   map(() => {
-                    return { message: 'Transaction is being processed' };
+                    return {
+                      message: 'Transaction is being processed',
+                      transactionId: transaction.id,
+                      state: transaction.state,
+                    };
                   }),
                 );
               }

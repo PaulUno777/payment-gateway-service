@@ -68,13 +68,13 @@ export class PaymentProviderController {
     return this.paymentProviderService.toggleActivation(id);
   }
 
-  @HttpCode(HttpStatus.OK)
-  @Post('test')
-  test(@Body() body: TestBody) {
-    console.log('body.amount', body.amount);
-    return this.paymentProviderService.findSuitableProvider(
-      body.amount,
-      body.providerType,
-    );
-  }
+  // @HttpCode(HttpStatus.OK)
+  // @Post('test')
+  // test(@Body() body: TestBody) {
+  //   console.log('body.amount', body.amount);
+  //   return this.paymentProviderService.findSuitableProvider(
+  //     body.amount,
+  //     body.providerType,
+  //   );
+  // }
 }

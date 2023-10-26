@@ -14,19 +14,19 @@ import { UserInfosRequest } from './dto/user-infos-request';
 import { ApiTags } from '@nestjs/swagger';
 import { IsPublic } from '@app/common';
 
-@ApiTags('Momo Service')
+@ApiTags('Momo Service for test purpose only')
 @Controller('momo')
 export class MomoController implements PaymentServiceController {
   constructor(private readonly momoService: MomoService) {}
 
   @IsPublic()
-  @Get('/get-codes')
+  @Get('/getCodes')
   getCodes(): Observable<string[]> | Promise<string[]> {
     return this.momoService.getProviderInfo();
   }
 
   @IsPublic()
-  @Post('/cash-in')
+  @Post('/cashin')
   cashIn(
     @Body()
     request: FinanceRequest,
@@ -35,7 +35,7 @@ export class MomoController implements PaymentServiceController {
   }
 
   @IsPublic()
-  @Post('/cash-out')
+  @Post('/cashout')
   cashOut(
     @Body()
     request: FinanceRequest,
@@ -57,10 +57,7 @@ export class MomoController implements PaymentServiceController {
   checkUserInfos(
     @Body()
     request: UserInfosRequest,
-  ):
-    | UserInfosResponse
-    | Observable<UserInfosResponse>
-    | Promise<UserInfosResponse> {
+  ): Observable<UserInfosResponse> | Promise<UserInfosResponse> {
     return this.momoService.checkUserInfos(request);
   }
 }
