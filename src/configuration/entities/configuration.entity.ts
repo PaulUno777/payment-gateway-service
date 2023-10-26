@@ -1,9 +1,13 @@
+import { ProviderCode, ProviderType } from '@prisma/client';
+
 export class DefaultConfiguration {
   makeTransactionAuto = false;
 
-  originalCurrenciesAvailable: string[] = ['EUR', 'USD', 'XAF', 'CAD'];
+  origineCurrenciesAvailable: string[] = ['EUR', 'USD', 'XAF', 'CAD'];
 
   destinationCurrenciesAvailable: string[] = ['XAF'];
 
-  ProviderCodeAvailable: string[] = ['CM_MTN_MOBILE_MONEY', 'CM_ORANGE_MONEY'];
+  ProviderCodeAvailable: string[] = Object.keys(ProviderCode);
+
+  ProviderTypeAvailable: string[] = Object.keys(ProviderType);
 }

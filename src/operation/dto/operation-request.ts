@@ -27,7 +27,7 @@ export class OperationRequest {
   @Type(() => Amount)
   amount: Amount;
 
-  @ApiProperty({ default: '' })
+  @ApiProperty({ default: 'Random description' })
   @Length(8, 127)
   description: string;
 
@@ -39,5 +39,17 @@ export class OperationRequest {
   @ApiPropertyOptional({ description: '', default: 'Optional' })
   @IsIn(arrayProviderCode())
   @IsOptional()
+  providerCode?: ProviderCode;
+}
+
+export class ProcessRequest {
+  @ApiProperty({ description: 'transaction id' })
+  @Length(24)
+  id: string;
+  @ApiProperty({
+    description: 'Code of the chosen Provider',
+    default: 'ORANGE_MONEY',
+  })
+  @IsIn(Object.values(ProviderCode))
   providerCode?: ProviderCode;
 }

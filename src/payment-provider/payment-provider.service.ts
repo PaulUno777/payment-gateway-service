@@ -14,8 +14,9 @@ import {
   from,
   map,
   switchMap,
+  toArray,
 } from 'rxjs';
-import { PaymentProvider, ProviderCode } from '@prisma/client';
+import { PaymentProvider, ProviderCode, ProviderType } from '@prisma/client';
 import { PrismaService } from '@app/common/prisma';
 
 @Injectable()
@@ -62,13 +63,31 @@ export class PaymentProviderService {
     );
   }
 
-  findByCode(code: ProviderCode): Observable<PaymentProvider> {
+  findOneByCode(code: ProviderCode): Observable<PaymentProvider> {
     this.logger.log('= = => Finding payment provider by code <= = =');
     return from(
       this.prisma.paymentProvider.findFirstOrThrow({
         where: { code: code, isActive: true },
       }),
     ).pipe(
+      catchError((error) => {
+        if (error.code === 'P2025')
+          throw new NotFoundException('Provider unavailable at the moment.');
+        throw new ConnectionErrorException();
+      }),
+    );
+  }
+
+  findByCode(code: ProviderCode): Observable<PaymentProvider[]> {
+    this.logger.log('= = => Finding payment provider by code <= = =');
+    return from(
+      this.prisma.paymentProvider.findFirstOrThrow({
+        where: { code: code, isActive: true },
+      }),
+    ).pipe(
+      map((paymentProvider) => {
+        return [paymentProvider];
+      }),
       catchError((error) => {
         if (error.code === 'P2025')
           throw new NotFoundException('Provider unavailable at the moment.');
@@ -131,12 +150,16 @@ export class PaymentProviderService {
     );
   }
 
-  async findSuitableProvider(amount: number): Promise<PaymentProvider> {
+  async findSuitableProvider(
+    amount: number,
+    providerType: ProviderType,
+  ): Promise<PaymentProvider[]> {
     this.logger.log('Finding suitable payment provider ...');
 
     const pipeline = [
       {
         $match: {
+          type: providerType,
           isActive: true,
           $expr: {
             $and: [
@@ -150,6 +173,7 @@ export class PaymentProviderService {
     const providers = await this.prisma.paymentProvider.aggregateRaw({
       pipeline,
     });
+
     if (providers.length === 0) {
       return await firstValueFrom(
         this.findByCode(ProviderCode.CM_AUTO_USSD).pipe(
@@ -161,26 +185,23 @@ export class PaymentProviderService {
         ),
       );
     }
-    const map = new Map(Object.entries(providers[0]));
-    const provider = Object.fromEntries(map);
-    console.log('provider', provider.code);
-    return {
-      id: provider._id.$oid,
-      createdAt: provider.createdAt.$date,
-      updatedAt: provider.updatedAt.$date,
-      label: provider.label,
-      code: provider.code,
-      type: provider.type,
-      applyCountry: provider.applyCountry,
-      logo: provider.logo,
-      isActive: provider.isActive,
-      params: provider.params,
-    };
-  }
 
-  findAllProviderCode() {
-    const ProviderArray = Object.values(ProviderCode);
-    console.log('ProviderArray', ProviderArray);
-    return { data: ProviderArray };
+    const arrayResponse = Object.values(providers);
+    return arrayResponse.map((elt) => {
+      const map = new Map(Object.entries(elt));
+      const provider = Object.fromEntries(map);
+      return {
+        id: provider._id.$oid,
+        createdAt: provider.createdAt.$date,
+        updatedAt: provider.updatedAt.$date,
+        label: provider.label,
+        code: provider.code,
+        type: provider.type,
+        applyCountry: provider.applyCountry,
+        logo: provider.logo,
+        isActive: provider.isActive,
+        params: provider.params,
+      };
+    });
   }
 }

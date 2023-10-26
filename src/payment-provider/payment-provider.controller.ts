@@ -11,9 +11,20 @@ import {
 import { PaymentProviderService } from './payment-provider.service';
 import { CreatePaymentProviderRequest } from './dto/create-payment-provider.dto';
 import { UpdatePaymentProviderRequest } from './dto/update-payment-provider.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { HasRole } from '@app/common';
 import { RoleType } from 'src/auth/types/role-type';
+import { ProviderType } from '@prisma/client';
+import { IsIn, IsNumber } from 'class-validator';
+
+class TestBody {
+  @ApiProperty()
+  @IsNumber()
+  amount: number;
+  @IsIn(Object.keys(ProviderType))
+  @ApiProperty()
+  providerType: ProviderType;
+}
 
 @ApiBearerAuth('jwt-auth')
 @HasRole(RoleType.super_admin, RoleType.manage_users, RoleType.all)
@@ -58,15 +69,12 @@ export class PaymentProviderController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @Get('provider/code')
-  findAllProviderCode() {
-    return this.paymentProviderService.findAllProviderCode();
-  }
-
-  @HttpCode(HttpStatus.OK)
   @Post('test')
-  test(@Body() body) {
+  test(@Body() body: TestBody) {
     console.log('body.amount', body.amount);
-    return this.paymentProviderService.findSuitableProvider(body.amount);
+    return this.paymentProviderService.findSuitableProvider(
+      body.amount,
+      body.providerType,
+    );
   }
 }

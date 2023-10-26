@@ -1,11 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { catchError, from, switchMap } from 'rxjs';
+import { Observable, catchError, from, switchMap } from 'rxjs';
 import { PrismaService } from '@app/common/prisma';
 import { ConnectionErrorException } from '@app/common';
 import {
   CreateReportRequest,
   UpdateReportRequest,
 } from './dto/execution-report-request.dto copy';
+import { ExecutionReport } from '@prisma/client';
 
 @Injectable()
 export class ExecutionReportService {
@@ -15,7 +16,7 @@ export class ExecutionReportService {
   }
   constructor(private readonly prisma: PrismaService) {}
 
-  create(request: CreateReportRequest) {
+  create(request: CreateReportRequest): Observable<ExecutionReport> {
     return from(this.prisma.executionReport.create({ data: request })).pipe(
       catchError((error) => {
         console.error(error);

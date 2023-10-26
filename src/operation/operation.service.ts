@@ -3,21 +3,34 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { OperationRequest } from './dto/operation-request';
+import { OperationRequest, ProcessRequest } from './dto/operation-request';
 import { PhoneHelperService } from '@app/phone-helper';
 import { PaymentProviderService } from 'src/payment-provider/payment-provider.service';
-import { Observable, catchError, from, map, of, switchMap } from 'rxjs';
-import { UserInfo } from './dto/operation-response.dto';
-import { Mouvement, PaymentProvider, State, Transaction } from '@prisma/client';
-import { OperatorGatewayLoader } from './operator-gateway.loader';
 import {
-  CashInProvider,
-  CashOutProvider,
-  UserInfosProvider,
-} from '@app/common/interfaces';
+  Observable,
+  catchError,
+  forkJoin,
+  from,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
+import { UserInfo } from './dto/operation-response.dto';
+import {
+  Mouvement,
+  PaymentProvider,
+  State,
+  Transaction,
+  ProviderCode,
+} from '@prisma/client';
+import { OperatorGatewayLoader } from './operator-gateway.loader';
+import { UserInfosProvider } from '@app/common/interfaces';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { CreateTransactionRequest } from 'src/transaction/dto/transaction-request.dto';
 import { ConfigurationService } from 'src/configuration/configuration.service';
+import { FinanceRequest, FinanceResponse } from 'src/momo/momo';
+import { randomUUID } from 'crypto';
+import { ExecutionReportService } from 'src/transaction/execution-report.service';
 
 @Injectable()
 export class OperationService {
@@ -29,6 +42,7 @@ export class OperationService {
     private readonly operatorGatewayLoader: OperatorGatewayLoader,
     private readonly paymentProviderService: PaymentProviderService,
     private readonly configuration: ConfigurationService,
+    private readonly executionReportService: ExecutionReportService,
   ) {}
 
   getSubscriberInfos(
@@ -36,17 +50,21 @@ export class OperationService {
     partyIdType: string,
     partyId: string,
   ): Observable<UserInfo> {
-    this.logger.log("Retrieving the subscriber's information");
+    this.logger.log("= = => Retrieving the subscriber's information <= = =");
 
-    const country = countryAlpha2.toUpperCase();
+    const helper = this.phoneHelper.load(
+      countryAlpha2.toUpperCase(),
+      partyIdType,
+    );
 
-    const helper = this.phoneHelper.load(country, partyIdType);
-
-    const formatedNumber = helper.formatPhoneNumber(partyId, country);
+    const formatedNumber = helper.formatPhoneNumber(
+      partyId,
+      countryAlpha2.toUpperCase(),
+    );
 
     const operatorCode = helper.getProviderCodeByMsisdn(formatedNumber);
 
-    return from(this.paymentProviderService.findByCode(operatorCode)).pipe(
+    return from(this.paymentProviderService.findOneByCode(operatorCode)).pipe(
       switchMap((provider) => {
         if (!provider.params.isCustomerInfoAvailable) {
           throw new ServiceUnavailableException(
@@ -102,6 +120,7 @@ export class OperationService {
         const request: CreateTransactionRequest = {
           ...operationRequest,
           source,
+          operatorCode: userInfo.provider,
           mouvement,
         };
         const recipient = operationRequest.recipientDetails;
@@ -122,111 +141,198 @@ export class OperationService {
     );
   }
 
-  initiateTransaction(transaction: Transaction): Observable<any> {
-    return from(this.loadProvider(transaction)).pipe();
-    throw 'methods not implemented';
+  cashout(currentSource, operationRequest: OperationRequest) {
+    this.checkConfiguration();
+    const source = {
+      name: currentSource.email,
+      type: currentSource.type,
+      entityId: currentSource.sub,
+    };
+    const mouvement = Mouvement.WITHDRAWAL;
+
+    return this.getSubscriberInfos(
+      operationRequest.recipientDetails.country,
+      operationRequest.recipientDetails.payeeId.partyIdType,
+      operationRequest.recipientDetails.payeeId.partyId,
+    ).pipe(
+      switchMap((userInfo) => {
+        const request: CreateTransactionRequest = {
+          ...operationRequest,
+          source,
+          operatorCode: userInfo.provider,
+          mouvement,
+        };
+        const recipient = operationRequest.recipientDetails;
+        request.recipientDetails = {
+          ...recipient,
+          name: userInfo.fullName,
+          payeeId: { ...recipient.payeeId, partyId: userInfo.msisdn },
+        };
+        return from(this.transactionService.create(request)).pipe(
+          switchMap((transaction) => {
+            if (operationRequest.providerCode || this.isAutomatic) {
+              return this.initiateTransaction(transaction);
+            }
+            return of({ message: 'Transaction initiated successfully.' });
+          }),
+        );
+      }),
+    );
   }
 
-  // cashout(currentSource, operationRequest: OperationRequest) {
-  //   const source = {
-  //     name: currentSource.email,
-  //     type: currentSource.type,
-  //     entityId: currentSource.sub,
-  //   };
-  //   const mouvement = Mouvement.DEPOSIT;
-  //   return from(this.loadProvider(operationRequest)).pipe(
-  //     switchMap((provider) => {
-  //       if (!provider.params.isDepositAvailable) {
-  //         throw new ServiceUnavailableException(
-  //           `Collection is currently unavailable on provider ${provider.code}`,
-  //         );
-  //       }
-  //       return from(
-  //         this.getSubscriberInfos(
-  //           operationRequest.recipientDetails.country,
-  //           operationRequest.recipientDetails.id,
-  //         ).pipe(
-  //           switchMap((userInfo) => {
-  //             const request = {
-  //               ...operationRequest,
-  //               source,
-  //               mouvement,
-  //               operatorCode: userInfo.provider,
-  //               providerCode: provider.code,
-  //             };
-  //             request.recipientDetails.name = userInfo.fullName;
-  //             request.recipientDetails.id = userInfo.msisdn;
-  //             return from(this.transactionService.create(request)).pipe(
-  //               switchMap((transaction) => {
-  //                 const provider: CashOutProvider =
-  //                   this.operatorGatewayLoader.load(transaction.providerCode);
-  //                 const financeRequest = {
-  //                   id: transaction.id,
-  //                   amount: transaction.amount.destinationAmount,
-  //                   payerPhone: transaction.recipientDetails.id,
-  //                   description: transaction.description,
-  //                   externalId: transaction.id,
-  //                   providerCode: transaction.providerCode,
-  //                   apiClient: transaction.senderDetails.id,
-  //                 };
-  //                 return from(provider.cashOut(financeRequest)).pipe(
-  //                   switchMap((financeResponse) => {
-  //                     if (financeResponse.success) {
-  //                       const update = {
-  //                         fees: financeResponse.providerResponse.fees ?? 0,
-  //                         payToken: financeResponse.providerResponse.payToken,
-  //                         report: {
-  //                           startLog: financeResponse.providerResponse,
-  //                           startTrace: 'not implemented yet',
-  //                         },
-  //                       };
-  //                       return from(
-  //                         this.transactionService.update(
-  //                           financeRequest.id,
-  //                           update,
-  //                         ),
-  //                       );
-  //                     }
-  //                     const update = {
-  //                       fees: financeResponse.providerResponse.fees ?? 0,
-  //                       payToken: financeResponse.providerResponse.payToken,
-  //                       state: State.FAILED,
-  //                       report: {
-  //                         startLog: financeResponse.providerResponse,
-  //                         startTrace: 'not implemented yet',
-  //                       },
-  //                     };
-  //                     return from(
-  //                       this.transactionService.update(
-  //                         financeRequest.id,
-  //                         update,
-  //                       ),
-  //                     );
-  //                   }),
-  //                 );
-  //               }),
-  //             );
-  //           }),
-  //         ),
-  //       );
-  //     }),
-  //     catchError((error) => {
-  //       throw error;
-  //     }),
-  //   );
-  // }
+  getStatus(id: string) {
+    throw new Error('Method not implemented.');
+  }
 
-  // getStatus(id: string) {
-  //   throw new Error('Method not implemented.');
-  // }
+  processTransaction(request: ProcessRequest) {
+    return this.transactionService.findOneToRetry(request.id).pipe(
+      switchMap((transaction) => {
+        return this.transactionService
+          .update(transaction.id, { providerCode: request.providerCode })
+          .pipe(
+            switchMap((transaction) => {
+              return this.initiateTransaction(transaction);
+            }),
+          );
+      }),
+      catchError((error) => {
+        throw error;
+      }),
+    );
+  }
+
+  initiateTransaction(transaction: Transaction): Observable<any> {
+    const isDeposit = transaction.mouvement == Mouvement.DEPOSIT;
+    return from(this.loadProvider(transaction)).pipe(
+      switchMap((provider) => {
+        return this.makeTransaction(transaction, provider.code, isDeposit);
+      }),
+    );
+  }
+
+  makeTransaction(transaction: Transaction, providerCode, isDeposit) {
+    return this.transactionService
+      .update(transaction.id, {
+        providerCode: providerCode,
+      })
+      .pipe(
+        switchMap((transaction) => {
+          const provider = this.operatorGatewayLoader.load(
+            transaction.providerCode,
+          );
+          const financeRequest: FinanceRequest = {
+            id: transaction.id,
+            amount: transaction.amount.destinationAmount,
+            payerPhone: transaction.recipientDetails.payeeId.partyId,
+            description: transaction.description,
+            providerCode: transaction.providerCode,
+            payToken: randomUUID(),
+          };
+          let operationObservable;
+          if (isDeposit) {
+            operationObservable = provider.cashIn(financeRequest);
+          } else {
+            operationObservable = provider.cashOut(financeRequest);
+          }
+
+          return from(operationObservable).pipe(
+            switchMap((financeResponse: FinanceResponse) => {
+              if (financeResponse.success) {
+                const update = {
+                  payToken: financeResponse.data.payToken,
+                  state: State.PENDING,
+                };
+                return forkJoin({
+                  transactionUpdate: from(
+                    this.transactionService.update(financeRequest.id, update),
+                  ),
+                  anotherResult: from(
+                    this.executionReportService.create({
+                      startLog: financeResponse.providerResponse,
+                      startTrace: financeResponse.trace,
+                      transactionId: transaction.id,
+                    }),
+                  ),
+                }).pipe(
+                  map(() => {
+                    return { message: 'Transaction is being processed' };
+                  }),
+                );
+              }
+              const update = {
+                payToken: financeResponse.data.payToken,
+                state: State.FAILED,
+              };
+              return forkJoin({
+                transactionUpdate: from(
+                  this.transactionService.update(financeRequest.id, update),
+                ),
+                executionReportUpdate: from(
+                  this.executionReportService.create({
+                    startLog: financeResponse.providerResponse,
+                    startTrace: financeResponse.trace,
+                    transactionId: transaction.id,
+                  }),
+                ),
+              }).pipe(
+                map(() => {
+                  return {
+                    message:
+                      'Error occurred while processing the transaction. Please try again.',
+                  };
+                }),
+              );
+            }),
+          );
+        }),
+        catchError((error) => {
+          throw error;
+        }),
+      );
+  }
 
   loadProvider(transaction: Transaction): Observable<PaymentProvider> {
     if (transaction.providerCode)
-      return this.paymentProviderService.findByCode(transaction.providerCode);
+      return this.paymentProviderService
+        .findByCode(transaction.providerCode)
+        .pipe(
+          map((provider: PaymentProvider[]) => {
+            const filtered = provider.filter((elt) => {
+              let isAvaillable = false;
+              if (transaction.mouvement == Mouvement.DEPOSIT)
+                isAvaillable = elt.params.isDepositAvailable;
+              if (transaction.mouvement == Mouvement.WITHDRAWAL)
+                isAvaillable = elt.params.isWithdrawalAvailable;
+              return elt.code === transaction.operatorCode && isAvaillable;
+            });
+            if (filtered.length == 0)
+              throw new ServiceUnavailableException(
+                'Service is currently unavailable on provider',
+              );
+            return filtered[0];
+          }),
+        );
     return from(
       this.paymentProviderService.findSuitableProvider(
         transaction.amount.destinationAmount,
+        transaction.recipientDetails.payeeId.partyIdType,
       ),
+    ).pipe(
+      map((provider: PaymentProvider[]) => {
+        const filtered = provider.filter((elt) => {
+          let isAvaillable = false;
+          if (transaction.mouvement == Mouvement.DEPOSIT)
+            isAvaillable = elt.params.isDepositAvailable;
+          if (transaction.mouvement == Mouvement.WITHDRAWAL)
+            isAvaillable = elt.params.isWithdrawalAvailable;
+          return elt.code === transaction.operatorCode && isAvaillable;
+        });
+        if (filtered.length == 0)
+          throw new ServiceUnavailableException(
+            'Service is currently unavailable on provider',
+          );
+        return filtered[0];
+      }),
     );
   }
 

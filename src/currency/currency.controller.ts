@@ -32,22 +32,4 @@ export class CurrencyController {
   ): ConvertCurrencyResponse {
     return this.currencyService.convertCurrency(query);
   }
-
-  @ApiOkResponse({
-    description: 'Returns all available destination currencies',
-  })
-  @ApiOperation({ summary: 'recover all available destination currencies' })
-  @Get('destination')
-  findAllDestination() {
-    return this.currencyService.findAllDestination();
-  }
-
-  @ApiOkResponse({
-    description: 'Returns all available original currencies',
-  })
-  @ApiOperation({ summary: 'recover all available original currencies' })
-  @Get('original')
-  findAllOriginal() {
-    return this.currencyService.findAllOriginal();
-  }
 }

@@ -6,10 +6,6 @@ import {
   ConvertCurrencyRequest,
   ConvertCurrencyResponse,
 } from './dto/currency.dto';
-import {
-  DESTINATION_CURRENCIES_AVAILABLE,
-  ORIGINAL_CURRENCIES_AVAILABLE,
-} from '@app/common/constants';
 
 @Injectable()
 export class CurrencyService implements OnApplicationBootstrap {
@@ -46,14 +42,6 @@ export class CurrencyService implements OnApplicationBootstrap {
     return result;
   }
 
-  async findAllDestination() {
-    return DESTINATION_CURRENCIES_AVAILABLE;
-  }
-
-  async findAllOriginal() {
-    return ORIGINAL_CURRENCIES_AVAILABLE;
-  }
-
   @Cron(CronExpression.EVERY_HOUR)
   updateExchangeRate() {
     return from(this.currencyapiService.latest({ base: 'EUR' })).pipe(
@@ -68,14 +56,5 @@ export class CurrencyService implements OnApplicationBootstrap {
         throw error;
       }),
     );
-  }
-
-  convertRespone(rates: any): any {
-    return Object.keys(rates).map((key) => {
-      return {
-        currency: key,
-        rate: rates[key],
-      };
-    });
   }
 }

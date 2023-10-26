@@ -7,7 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { OperationService } from './operation.service';
-import { OperationRequest } from './dto/operation-request';
+import { OperationRequest, ProcessRequest } from './dto/operation-request';
 import { CurrentUser, HasRole } from '@app/common';
 import {
   ApiBearerAuth,
@@ -19,7 +19,7 @@ import {
 import { OperationResponse, UserInfo } from './dto/operation-response.dto';
 import { Observable } from 'rxjs';
 import { RoleType } from 'src/auth/types/role-type';
-import { PartyIdType } from '@prisma/client';
+import { ProviderType } from '@prisma/client';
 
 @ApiBearerAuth('jwt-auth')
 @HasRole(
@@ -37,31 +37,43 @@ export class OperationController {
     description: 'Returns authentification tokens',
     type: OperationResponse,
   })
-  @ApiOperation({ summary: 'make a payment' })
+  @ApiOperation({ summary: 'Make a disbursement' })
   @Post('cash-in')
   cashin(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
     return this.operationService.cashin(source, operationRequest);
   }
 
-  // @ApiCreatedResponse({
-  //   description: 'Returns Transaction',
-  //   type: OperationResponse,
-  // })
-  // @ApiOperation({ summary: 'Make a disbursement' })
-  // @Post('cash-out')
-  // cashout(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
-  //   return this.operationService.cashout(source, operationRequest);
-  // }
+  @ApiCreatedResponse({
+    description: 'Returns Transaction',
+    type: OperationResponse,
+  })
+  @ApiOperation({ summary: 'make a payment' })
+  @Post('cash-out')
+  cashout(@CurrentUser() source, @Body() operationRequest: OperationRequest) {
+    return this.operationService.cashout(source, operationRequest);
+  }
 
-  // @ApiOkResponse({
-  //   description: 'Returns Transaction',
-  //   type: OperationResponse,
-  // })
-  // @ApiOperation({ summary: 'Get transaction status' })
-  // @Get('payment-status/:id')
-  // getStatus(@Param('id') id: string) {
-  //   return this.operationService.getStatus(id);
-  // }
+  @ApiOkResponse({
+    description: 'Initiate a transaction at the created or failed stage',
+    type: OperationResponse,
+  })
+  @ApiOperation({
+    summary: 'Initiate created or failed transaction',
+  })
+  @Post('process-transaction')
+  processTransaction(@Body() processRequest: ProcessRequest) {
+    return this.operationService.processTransaction(processRequest);
+  }
+
+  @ApiOkResponse({
+    description: 'Returns Transaction',
+    type: OperationResponse,
+  })
+  @ApiOperation({ summary: 'Get transaction status' })
+  @Get('payment-status/:id')
+  getStatus(@Param('id') id: string) {
+    return this.operationService.getStatus(id);
+  }
 
   @ApiOkResponse({
     description: 'Returns user informations',
@@ -74,9 +86,9 @@ export class OperationController {
     @Param('partyIdType') partyIdType: string,
     @Param('partyId') partyId: string,
   ): Observable<UserInfo> {
-    if (!Object.keys(PartyIdType).includes(partyIdType))
+    if (!Object.keys(ProviderType).includes(partyIdType))
       throw new BadRequestException(
-        `Available partyIdType are ${Object.keys(PartyIdType)}`,
+        `Available partyIdType are ${Object.keys(ProviderType)}`,
       );
     if (country.length != 2 || /\D/.test(partyId))
       throw new BadRequestException('Make sure your parameters are valid');

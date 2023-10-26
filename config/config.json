@@ -1,1 +1,1 @@
-{"makeTransactionAuto":false,"originalCurrenciesAvailable":["EUR","USD","XAF","CAD"],"destinationCurrenciesAvailable":["XAF"],"ProviderCodeAvailable":["CM_MTN_MOBILE_MONEY","CM_ORANGE_MONEY"]}
+{"makeTransactionAuto":false,"origineCurrenciesAvailable":["EUR","USD","XAF","CAD"],"destinationCurrenciesAvailable":["XAF"],"ProviderCodeAvailable":["CM_MTN_MOBILE_MONEY","CM_ORANGE_MONEY","CM_INTOUCH","CM_AUTO_USSD"],"ProviderTypeAvailable":["MOBILE_MONEY","BANKING","CARD_NUMBER"]}

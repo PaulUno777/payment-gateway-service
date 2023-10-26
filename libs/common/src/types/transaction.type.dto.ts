@@ -2,13 +2,12 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ExecutionReport,
   Mouvement,
-  PartyIdType,
   ProviderCode,
+  ProviderType,
   SourceType,
 } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
-  IsArray,
   IsISO31661Alpha2,
   IsIn,
   IsNumber,
@@ -23,11 +22,11 @@ import {
 } from '../constants';
 
 class PayeeId {
-  @ApiProperty()
-  @IsIn(Object.values(PartyIdType))
-  partyIdType: PartyIdType;
+  @ApiProperty({ default: 'MOBILE_MONEY' })
+  @IsIn(Object.values(ProviderType))
+  partyIdType: ProviderType;
 
-  @ApiProperty()
+  @ApiProperty({ default: '679218039' })
   @IsString()
   partyId: string;
 }
@@ -47,15 +46,15 @@ export class Source {
 }
 
 export class SenderDetails {
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: '', default: 'Kamix Client' })
   @IsString()
   id: string;
 
-  @ApiProperty({ description: '' })
+  @ApiProperty({ description: '', default: 'Kamix Client' })
   @IsOptional()
   name: string;
 
-  @ApiProperty({ description: '', default: 'CM' })
+  @ApiProperty({ description: '', default: 'FR' })
   @IsISO31661Alpha2()
   country: string;
 }
@@ -92,7 +91,7 @@ export class Amount {
   @Min(1)
   destinationAmount: number;
 
-  @ApiProperty({ description: 'Exchange rate', default: 0 })
+  @ApiProperty({ description: 'Exchange rate', default: 1 })
   @IsNumber()
   exchangeRate: number;
 }

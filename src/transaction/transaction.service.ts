@@ -1,16 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PhoneHelperService } from '@app/phone-helper';
-import { catchError, from, map, switchMap } from 'rxjs';
+import { Observable, catchError, from, map, switchMap } from 'rxjs';
 import { PrismaService } from '@app/common/prisma';
 import { ConnectionErrorException } from '@app/common';
 import {
   CreateTransactionRequest,
   UpdateTransactionRequest,
 } from './dto/transaction-request.dto';
-import { State } from '@prisma/client';
+import { State, Transaction } from '@prisma/client';
 
 @Injectable()
 export class TransactionService {
+  private logger = new Logger();
   allPaginated() {
     throw new Error('Method not implemented.');
   }
@@ -68,6 +74,19 @@ export class TransactionService {
     );
   }
 
+  findAllPending(): Observable<Transaction[]> {
+    this.logger.log('Finding all payment providers ...');
+    return from(
+      this.prisma.transaction.findMany({ where: { state: State.PENDING } }),
+    ).pipe(
+      catchError((error) => {
+        throw new ConnectionErrorException(
+          `Something went wrong with data source \n ${error}`,
+        );
+      }),
+    );
+  }
+
   cancel(id: string) {
     return this.update(id, { state: State.CANCEL })
       .pipe(
@@ -83,5 +102,24 @@ export class TransactionService {
           throw error;
         }),
       );
+  }
+
+  findOneToRetry(id: string) {
+    return from(
+      this.prisma.transaction.findFirstOrThrow({
+        where: {
+          id: id,
+          OR: [{ state: State.CREATED }, { state: State.FAILED }],
+        },
+      }),
+    ).pipe(
+      catchError((error) => {
+        if (error.code && error.code === 'P2025')
+          throw new BadRequestException(
+            'We can only process transactions in CREATED and FAILED states.',
+          );
+        throw new ConnectionErrorException();
+      }),
+    );
   }
 }

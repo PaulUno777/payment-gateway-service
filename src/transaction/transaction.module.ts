@@ -8,6 +8,6 @@ import { ExecutionReportService } from './execution-report.service';
   controllers: [TransactionController],
   providers: [TransactionService, ExecutionReportService],
   imports: [PhoneHelperModule],
-  exports: [TransactionService],
+  exports: [TransactionService, ExecutionReportService],
 })
 export class TransactionModule {}

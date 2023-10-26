@@ -18,7 +18,7 @@ export class CreatePaymentProviderRequest {
   type: ProviderType;
 
   @IsArray()
-  @ApiProperty({ default: ['CMR'] })
+  @ApiProperty({ default: ['CM'] })
   applyCountry: string[];
 
   @IsOptional()

@@ -62,7 +62,7 @@ type ProviderParams {
 enum ProviderType {
   MOBILE_MONEY
   BANKING
-  CASH
+  CARD_NUMBER
 }
 
 enum ProviderCode {
@@ -85,6 +85,7 @@ model Transaction {
   description      String?
   callbackUrl      String?
   payToken         String?
+  operatorCode     ProviderCode
   state            State             @default(CREATED)
   mouvement        Mouvement
   executionReports ExecutionReport[] @relation(fields: [], references: [])
@@ -124,14 +125,8 @@ type SenderDetails {
 }
 
 type PayeeId {
-  partyIdType PartyIdType @default(MSISDN)
+  partyIdType ProviderType @default(MOBILE_MONEY)
   partyId     String
-}
-
-enum PartyIdType {
-  MSISDN
-  IBAN
-  CARD_NUMBER
 }
 
 type RecipientDetails {
