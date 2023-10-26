@@ -336,8 +336,8 @@ export class OperationService {
         console.log('status', status);
         if (status.success) {
           if (
-            (status.data.status === 'SUCCESSFUL',
-            status.data.status === 'SUCCESSFULL')
+            status.data.status === 'SUCCESSFUL' ||
+            status.data.status === 'SUCCESSFULL'
           )
             state = State.SUCCESS;
           if (
@@ -346,35 +346,38 @@ export class OperationService {
           )
             state = State.FAILED;
 
-          return forkJoin({
-            transactionUpdate: from(
-              this.transactionService.update(transaction.id, {
-                fees: status.data.fees || 0,
-                state,
+          if (state !== State.PENDING)
+            return forkJoin({
+              transactionUpdate: from(
+                this.transactionService.update(transaction.id, {
+                  fees: status.data.fees || 0,
+                  state,
+                }),
+              ),
+              executionReport: from(
+                this.executionReportService.update(transaction.id, {
+                  endLog: status.providerResponse,
+                  endTrace: status.trace,
+                }),
+              ),
+            }).pipe(
+              map((response) => {
+                return {
+                  success: true,
+                  transaction: response.transactionUpdate,
+                };
               }),
-            ),
-            executionReport: from(
-              this.executionReportService.update(transaction.id, {
-                endLog: status.providerResponse,
-                endTrace: status.trace,
-              }),
-            ),
-          }).pipe(
-            map((response) => {
-              return { success: true, transaction: response.transactionUpdate };
-            }),
-          );
+            );
+          return of({
+            success: true,
+            transaction: transaction,
+          });
         }
         return of({ success: false, transaction });
-        // return of({
-        //   message:
-        //     'An error occurred at the operator while checking the status of the transaction',
-        // });
       }),
       catchError((error) => {
         throw new InternalServerErrorException(
-          'An unexpected error occurred.',
-          error,
+          'An unexpected error occurred.' + error,
         );
       }),
     );

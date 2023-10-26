@@ -14,6 +14,7 @@ export class ControlService {
 
   @Cron(CronExpression.EVERY_5_MINUTES, { name: 'status checker job' })
   checkTransactionState() {
+    this.logger.log('= = => [ Checking transactions state ] <= = =');
     return this.transactionService
       .findAllPending()
       .pipe(

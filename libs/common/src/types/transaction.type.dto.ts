@@ -75,7 +75,7 @@ export class RecipientDetails {
 }
 
 export class Amount {
-  @ApiProperty({ description: 'Original currency' })
+  @ApiProperty({ description: 'Original currency', default: 'XAF' })
   @IsIn(ORIGINAL_CURRENCIES_AVAILABLE)
   originalCurrency: string;
 
@@ -83,7 +83,7 @@ export class Amount {
   @Min(1)
   originalAmount: number;
 
-  @ApiProperty({ description: 'Destination currency' })
+  @ApiProperty({ description: 'Destination currency', default: 'XAF' })
   @IsIn(DESTINATION_CURRENCIES_AVAILABLE)
   destinationCurrency: string;
 

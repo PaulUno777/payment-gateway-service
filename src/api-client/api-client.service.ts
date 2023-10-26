@@ -20,11 +20,11 @@ export class ApiClientService {
   create(
     createDto: CreateApiClientReq,
   ): Observable<{ message: string; entity: ApiClient }> {
-    this.logger.log('Registering a new API client ...');
+    this.logger.log('= = => [ Registering a new API client ] <= = =');
 
     return from(this.prisma.apiClient.create({ data: createDto })).pipe(
       switchMap((response) => {
-        const { apiKey, secretKey } = this.generateKeysPaire(response.id);
+        const { apiKey, secretKey } = this.generateKeyPaire(response.id);
         return from(
           this.prisma.apiClient.update({
             where: { id: response.id },
@@ -68,7 +68,8 @@ export class ApiClientService {
   }
 
   findAll(): Observable<ApiClient[]> {
-    this.logger.log('Finding all API clients ...');
+    this.logger.log('= = => [ Finding all API clients ] <= = =');
+
     return from(this.prisma.apiClient.findMany()).pipe(
       catchError((error) => {
         throw new ConnectionErrorException(
@@ -79,7 +80,8 @@ export class ApiClientService {
   }
 
   findOne(id: string): Observable<ApiClient> {
-    this.logger.log('Finding API client by id ...');
+    this.logger.log('= = => [ Finding API client by id ] <= = =');
+
     return from(
       this.prisma.apiClient.findFirstOrThrow({
         where: { id: id },
@@ -98,7 +100,8 @@ export class ApiClientService {
     id: string,
     updateReq: UpdateApiClientReq,
   ): Observable<{ message: string; entity: ApiClient }> {
-    this.logger.log('Updating API client ...');
+    this.logger.log('= = => [ Updating API client ] <= = =');
+
     return this.findOne(id).pipe(
       switchMap((entity) => {
         return from(
@@ -122,7 +125,8 @@ export class ApiClientService {
   }
 
   toggleActivation(id: string): Observable<any> {
-    this.logger.log('Toggle activation state of API client ...');
+    this.logger.log('= = => [ Toggle activation state of API client ] <= = =');
+
     return this.findOne(id).pipe(
       switchMap((entity) => {
         return from(
@@ -149,7 +153,9 @@ export class ApiClientService {
     );
   }
 
-  generateKeysPaire(apiId: string): { apiKey: string; secretKey: string } {
+  generateKeyPaire(apiId: string): { apiKey: string; secretKey: string } {
+    this.logger.log('----- Toggle activation state of API client -----');
+
     const apiKey = crypto
       .createHmac('sha256', apiId)
       .update(new Date().toString())
@@ -164,5 +170,32 @@ export class ApiClientService {
       apiKey,
       secretKey,
     };
+  }
+
+  reGenKeyPaire(id: string) {
+    this.logger.log('= = => [ Updating API client ] <= = =');
+
+    return this.findOne(id).pipe(
+      switchMap((entity) => {
+        const { apiKey, secretKey } = this.generateKeyPaire(entity.id);
+
+        return from(
+          this.prisma.apiClient.update({
+            where: { id: entity.id },
+            data: { apiKey, secretKey },
+          }),
+        ).pipe(
+          catchError((error) => {
+            throw new ConnectionErrorException(error);
+          }),
+        );
+      }),
+      map((response) => {
+        return { message: 'keys regenerated successfully', entity: response };
+      }),
+      catchError((error) => {
+        throw error;
+      }),
+    );
   }
 }
