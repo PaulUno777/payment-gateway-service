@@ -269,11 +269,11 @@ export class OperationService {
                     }),
                   ),
                 }).pipe(
-                  map(() => {
+                  map((response) => {
                     return {
                       message: 'Transaction is being processed',
                       transactionId: transaction.id,
-                      state: transaction.state,
+                      state: response.transactionUpdate.state,
                     };
                   }),
                 );
@@ -296,10 +296,12 @@ export class OperationService {
                   }),
                 ),
               }).pipe(
-                map(() => {
+                map((response) => {
                   return {
                     message:
                       'Error occurred while processing the transaction. Please try again.',
+                    transactionId: transaction.id,
+                    state: response.transactionUpdate.state,
                   };
                 }),
               );
