@@ -1,4 +1,3 @@
-import { transactionId } from './../intouch/dto/transaction-id.dto';
 import {
   BadRequestException,
   Injectable,
@@ -336,7 +335,11 @@ export class OperationService {
         let state: State = State.PENDING;
         console.log('status', status);
         if (status.success) {
-          if (status.data.status === 'SUCCESSFUL') state = State.SUCCESS;
+          if (
+            (status.data.status === 'SUCCESSFUL',
+            status.data.status === 'SUCCESSFULL')
+          )
+            state = State.SUCCESS;
           if (
             status.data.status === 'FAILED' ||
             status.data.status === 'EXPIRED'
