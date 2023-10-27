@@ -15,6 +15,7 @@ import { CurrencyModule } from './currency/currency.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigurationModule } from './configuration/configuration.module';
 import { ControlModule } from './control/control.module';
+import { CallbackModule } from './callback/callback.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ControlModule } from './control/control.module';
     PrismaModule,
     ConfigurationModule,
     ControlModule,
+    CallbackModule,
   ],
   providers: [
     {

@@ -4,7 +4,6 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
-  IsISO31661Alpha2,
   IsIn,
   IsOptional,
   ValidateNested,
@@ -23,7 +22,7 @@ export class UpdatePaymentProviderRequest {
 
   @IsOptional()
   @IsArray()
-  @ApiProperty({ default: ['CMR'] })
+  @ApiProperty({ default: ['CM'] })
   applyCountry?: string[];
 
   @IsOptional()

@@ -12,9 +12,9 @@ export class ControlService {
     private readonly operationService: OperationService,
   ) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES, { name: 'status checker job' })
+  @Cron(CronExpression.EVERY_10_MINUTES, { name: 'status checker job' })
   checkTransactionState() {
-    this.logger.log('= = => [ Checking transactions state ] <= = =');
+    this.logger.log('= = => [ Job Checking transactions state ] <= = =');
     return this.transactionService
       .findAllPending()
       .pipe(
